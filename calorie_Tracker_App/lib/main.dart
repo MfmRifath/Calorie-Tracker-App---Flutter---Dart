@@ -10,7 +10,6 @@ class CalorieTrackerApp extends StatelessWidget {
     return MaterialApp(
       title: 'Calorie Tracker',
       theme: ThemeData(
-        primarySwatch: Colors.green,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: HomeScreen(),

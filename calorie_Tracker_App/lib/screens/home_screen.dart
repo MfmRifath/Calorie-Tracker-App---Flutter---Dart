@@ -9,7 +9,14 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Calorie Tracker'),
+        backgroundColor: Colors.green.shade50,
+        titleTextStyle: TextStyle(
+          color: Colors.black,
+          fontSize: 25.0,
+          fontWeight: FontWeight.bold,
+
+        ),
+        title: Center(child: Text('Calorie Tracker')),
       ),
       body: ListView(
         children: <Widget>[
