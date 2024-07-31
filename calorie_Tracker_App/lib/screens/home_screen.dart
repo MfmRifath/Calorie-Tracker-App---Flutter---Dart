@@ -1,11 +1,9 @@
 import 'dart:ui';
-
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../modals/chart_modal.dart';
-
 import 'add_meal_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -15,6 +13,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int touchedIndex = -1;
+  int _selectedIndex = 0;
 
   List<PieChartSectionData> showingSections() {
     return List.generate(4, (i) {
@@ -106,6 +105,13 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+      // Add logic to handle navigation or other actions based on the selected index
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     double chartSize = MediaQuery.of(context).size.width * 0.5;
@@ -186,12 +192,14 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                           ),
-                          Text('Claorie %',
-                          style: GoogleFonts.akayaTelivigala(
-                            textStyle:  const TextStyle(
-                              fontSize: 20.0,
+                          Text(
+                            'Calorie %',
+                            style: GoogleFonts.akayaTelivigala(
+                              textStyle: const TextStyle(
+                                fontSize: 20.0,
+                              ),
                             ),
-                          ),)
+                          ),
                         ],
                       ),
                     ),
@@ -296,72 +304,104 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           Text(
-                            'Daily Calorie Consumsion',
+                            'Daily Calorie Consumption',
                             style: GoogleFonts.akayaTelivigala(
                               textStyle: const TextStyle(
                                 fontSize: 20.0,
-                              )
+                              ),
                             ),
-                          )
+                          ),
                         ],
                       ),
                     ),
                   ],
                 ),
               ),
-              Expanded(child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  TextButton(
-                style: ButtonStyle(
-
-              ),
-                    ,onPressed: (){}, child: Row(
-                    children:<Widget> [
-                      Text('Set Goal'),
-                      Icon(FontAwesomeIcons.add),
-                    ],
-                  ),),
-                  TextButton(
-
-                    onPressed: (){}, child: Row(
-                    children: <Widget>[
-                    Text('Today\'s Calories'),
-                      Icon(FontAwesomeIcons.add)
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    TextButton(
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all<Color>(Color(0xff00ab00)),
+                      ),
+                      onPressed: () {},
+                      child: Row(
+                        children: <Widget>[
+                          Text(
+                            'Set Goal',
+                            style: GoogleFonts.akayaTelivigala(
+                              color: Colors.white,
+                            ),
+                          ),
+                          SizedBox(width: 5),
+                          Icon(
+                            FontAwesomeIcons.plus,
+                            color: Colors.white,
+                          ),
+                        ],
+                      ),
+                    ),
+                    TextButton(
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all<Color>(Color(0xff00ab00)),
+                      ),
+                      onPressed: () {},
+                      child: Row(
+                        children: <Widget>[
+                          Text(
+                            "Today's Calories",
+                            style: GoogleFonts.akayaTelivigala(
+                              textStyle: TextStyle(
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 5),
+                          Icon(
+                            FontAwesomeIcons.plus,
+                            color: Colors.white,
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
-
-                  ),
-                  ),
-
-              ],
-              ),
+                ),
               ),
               Expanded(
-                child: ListView(
+                child: Container(
 
-                  children: const <Widget>[
-                    ListTile(
-
-                      leading: Icon(Icons.fastfood),
-                      title: Text('Breakfast'),
-                      subtitle: Text('300 kcal'),
-                      focusColor: Colors.white24,
+                  decoration: BoxDecoration(
+                    color: Colors.white54,
+                    border: Border.all(
+                      width: 0,
                     ),
-                    ListTile(
-                      leading: Icon(Icons.lunch_dining),
-                      title: Text('Lunch'),
-                      subtitle: Text('600 kcal'),
-                      focusColor: Colors.white24,
-                    ),
-                    ListTile(
-                      leading: Icon(Icons.dinner_dining),
-                      title: Text('Dinner'),
-                      subtitle: Text('700 kcal'),
-                      focusColor: Colors.white24,
-                      hoverColor: Colors.green,
-                    ),
-                  ],
+                    borderRadius: BorderRadius.circular(10.0), // Uniform radius
+                  ),
+                  child: ListView(
+                    children: const <Widget>[
+                      ListTile(
+                        leading: Icon(Icons.fastfood),
+                        title: Text('Breakfast'),
+                        subtitle: Text('300 kcal'),
+                        focusColor: Colors.white24,
+                      ),
+                      ListTile(
+                        leading: Icon(Icons.lunch_dining),
+                        title: Text('Lunch'),
+                        subtitle: Text('600 kcal'),
+                        focusColor: Colors.white24,
+                      ),
+                      ListTile(
+                        leading: Icon(Icons.dinner_dining),
+                        title: Text('Dinner'),
+                        subtitle: Text('700 kcal'),
+                        focusColor: Colors.white24,
+                        hoverColor: Colors.green,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -376,6 +416,27 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         },
         child: Icon(Icons.add),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Color(0xff8f8),
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.search),
+            label: 'Search',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Color(0xff00ab00),
+        onTap: _onItemTapped,
       ),
     );
   }
