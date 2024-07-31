@@ -1,11 +1,12 @@
-// lib/screens/home_screen.dart
-import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'add_meal_screen.dart';
-import 'package:fl_chart_app/presentation/resources/app_resources.dart';
-import 'package:fl_chart/fl_chart.dart';
-import 'package:fl_chart_app/presentation/widgets/indicator.dart';
+import 'dart:ui';
 
+import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../modals/chart_modal.dart';
+
+import 'add_meal_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -14,8 +15,101 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int touchedIndex = -1;
+
+  List<PieChartSectionData> showingSections() {
+    return List.generate(4, (i) {
+      final isTouched = i == touchedIndex;
+      final double fontSize = isTouched ? 25.0 : 18.0;
+      final double radius = isTouched ? 60.0 : 50.0;
+      switch (i) {
+        case 0:
+          return PieChartSectionData(
+            color: Colors.blue,
+            value: 40,
+            title: '40%',
+            radius: radius,
+            titleStyle: TextStyle(
+              fontSize: fontSize,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xffffffff),
+            ),
+          );
+        case 1:
+          return PieChartSectionData(
+            color: Colors.red,
+            value: 30,
+            title: '30%',
+            radius: radius,
+            titleStyle: TextStyle(
+              fontSize: fontSize,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xffffffff),
+            ),
+          );
+        case 2:
+          return PieChartSectionData(
+            color: Colors.green,
+            value: 20,
+            title: '20%',
+            radius: radius,
+            titleStyle: TextStyle(
+              fontSize: fontSize,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xffffffff),
+            ),
+          );
+        case 3:
+          return PieChartSectionData(
+            color: Colors.yellow,
+            value: 10,
+            title: '10%',
+            radius: radius,
+            titleStyle: TextStyle(
+              fontSize: fontSize,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xffffffff),
+            ),
+          );
+        default:
+          throw Error();
+      }
+    });
+  }
+
+  BarChartGroupData makeGroupData(int x, double y) {
+    return BarChartGroupData(
+      x: x,
+      barRods: [
+        BarChartRodData(
+          toY: y,
+          color: Colors.lightBlueAccent,
+          width: 22,
+        ),
+      ],
+    );
+  }
+
+  List<BarChartGroupData> showingBarGroups() {
+    return List.generate(4, (i) {
+      switch (i) {
+        case 0:
+          return makeGroupData(i, 40);
+        case 1:
+          return makeGroupData(i, 30);
+        case 2:
+          return makeGroupData(i, 20);
+        case 3:
+          return makeGroupData(i, 10);
+        default:
+          throw Error();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    double chartSize = MediaQuery.of(context).size.width * 0.5;
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -26,63 +120,246 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         child: SafeArea(
           child: Column(
-
             children: <Widget>[
-              Expanded(
-                  child: Container(
-
-                    color: Colors.white24,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        ClipOval(
-                          child: Image(image: AssetImage('assets/images/app_icon.png'),
-                          width: 100.0, height: 100.0,
-                          fit: BoxFit.fill,),
+              Container(
+                padding: EdgeInsets.all(20.0),
+                color: Colors.white24,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    const ClipOval(
+                      child: Image(
+                        image: AssetImage('assets/images/app_icon.png'),
+                        width: 100.0,
+                        height: 100.0,
+                        fit: BoxFit.fill,
+                      ),
+                    ),
+                    SizedBox(width: 10.0),
+                    Text(
+                      'Calorie Tracker',
+                      style: GoogleFonts.aladin(
+                        textStyle: const TextStyle(
+                          fontSize: 50.0,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
-                        SizedBox(width: 10.0,),
-                        Text(
-                          'Calorie Tracker',
-                          style:GoogleFonts.aladin(
-                            textStyle: TextStyle(
-                                fontSize: 50.0
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Container(
+                      color: Colors.white54,
+                      width: chartSize,
+                      height: chartSize,
+                      child: Column(
+                        children: <Widget>[
+                          Expanded(
+                            child: PieChart(
+                              PieChartData(
+                                sections: showingSections(),
+                                centerSpaceRadius: 40,
+                                sectionsSpace: 2,
+                                startDegreeOffset: 0,
+                                pieTouchData: PieTouchData(
+                                  touchCallback: (FlTouchEvent event, pieTouchResponse) {
+                                    setState(() {
+                                      if (!event.isInterestedForInteractions ||
+                                          pieTouchResponse == null ||
+                                          pieTouchResponse.touchedSection == null) {
+                                        touchedIndex = -1;
+                                        return;
+                                      }
+                                      touchedIndex = pieTouchResponse
+                                          .touchedSection!.touchedSectionIndex;
+                                    });
+                                  },
+                                ),
+                                borderData: FlBorderData(
+                                  show: false,
+                                ),
+                              ),
+                            ),
+                          ),
+                          Text('Claorie %',
+                          style: GoogleFonts.akayaTelivigala(
+                            textStyle:  const TextStyle(
+                              fontSize: 20.0,
+                            ),
+                          ),)
+                        ],
+                      ),
+                    ),
+                    Container(
+                      color: Colors.white54,
+                      width: chartSize,
+                      height: chartSize,
+                      child: Column(
+                        children: <Widget>[
+                          Expanded(
+                            child: BarChart(
+                              BarChartData(
+                                alignment: BarChartAlignment.spaceAround,
+                                maxY: 50,
+                                barTouchData: BarTouchData(
+                                  touchTooltipData: BarTouchTooltipData(
+                                    tooltipPadding: EdgeInsets.all(8),
+                                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                                      String weekDay;
+                                      switch (group.x.toInt()) {
+                                        case 0:
+                                          weekDay = 'Monday';
+                                          break;
+                                        case 1:
+                                          weekDay = 'Tuesday';
+                                          break;
+                                        case 2:
+                                          weekDay = 'Wednesday';
+                                          break;
+                                        case 3:
+                                          weekDay = 'Thursday';
+                                          break;
+                                        default:
+                                          throw Error();
+                                      }
+                                      return BarTooltipItem(
+                                        weekDay + '\n',
+                                        const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 18,
+                                        ),
+                                        children: <TextSpan>[
+                                          TextSpan(
+                                            text: (rod.toY).toString(),
+                                            style: const TextStyle(
+                                              color: Colors.yellow,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  ),
+                                ),
+                                titlesData: FlTitlesData(
+                                  bottomTitles: AxisTitles(
+                                    sideTitles: SideTitles(
+                                      showTitles: true,
+                                      getTitlesWidget: (double value, TitleMeta meta) {
+                                        const style = TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                        );
+                                        Widget text;
+                                        switch (value.toInt()) {
+                                          case 0:
+                                            text = Text('Mon', style: style);
+                                            break;
+                                          case 1:
+                                            text = Text('Tue', style: style);
+                                            break;
+                                          case 2:
+                                            text = Text('Wed', style: style);
+                                            break;
+                                          case 3:
+                                            text = Text('Thu', style: style);
+                                            break;
+                                          default:
+                                            text = Text('', style: style);
+                                            break;
+                                        }
+                                        return SideTitleWidget(
+                                          axisSide: meta.axisSide,
+                                          space: 16,
+                                          child: text,
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                  leftTitles: const AxisTitles(
+                                    sideTitles: SideTitles(showTitles: false),
+                                  ),
+                                ),
+                                borderData: FlBorderData(
+                                  show: false,
+                                ),
+                                barGroups: showingBarGroups(),
+                              ),
+                            ),
+                          ),
+                          Text(
+                            'Daily Calorie Consumsion',
+                            style: GoogleFonts.akayaTelivigala(
+                              textStyle: const TextStyle(
+                                fontSize: 20.0,
+                              )
                             ),
                           )
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-
+                  ],
+                ),
               ),
               Expanded(child: Row(
-                children: <Widget>[
-                  PieChart(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  TextButton(
+                style: ButtonStyle(
 
-                    PieChartData(
-                      
-                    ),
-                  )
-                ],
+              ),
+                    ,onPressed: (){}, child: Row(
+                    children:<Widget> [
+                      Text('Set Goal'),
+                      Icon(FontAwesomeIcons.add),
+                    ],
+                  ),),
+                  TextButton(
 
+                    onPressed: (){}, child: Row(
+                    children: <Widget>[
+                    Text('Today\'s Calories'),
+                      Icon(FontAwesomeIcons.add)
+                  ],
+
+                  ),
+                  ),
+
+              ],
               ),
               ),
               Expanded(
                 child: ListView(
-                  children: <Widget>[
+
+                  children: const <Widget>[
                     ListTile(
+
                       leading: Icon(Icons.fastfood),
                       title: Text('Breakfast'),
                       subtitle: Text('300 kcal'),
+                      focusColor: Colors.white24,
                     ),
                     ListTile(
                       leading: Icon(Icons.lunch_dining),
                       title: Text('Lunch'),
                       subtitle: Text('600 kcal'),
+                      focusColor: Colors.white24,
                     ),
                     ListTile(
                       leading: Icon(Icons.dinner_dining),
                       title: Text('Dinner'),
                       subtitle: Text('700 kcal'),
+                      focusColor: Colors.white24,
+                      hoverColor: Colors.green,
                     ),
                   ],
                 ),
