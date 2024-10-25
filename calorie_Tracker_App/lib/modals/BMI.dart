@@ -1,13 +1,15 @@
 class BMI {
-  double weight;
-  double height;
+  double weight; // Weight in kilograms
+  double height; // Height in meters
 
   BMI({required this.weight, required this.height});
 
+  /// Calculates the BMI based on weight and height.
   double calculateBMI() {
     return weight / (height * height);
   }
 
+  /// Determines the BMI category based on the calculated BMI value.
   String getBMICategory() {
     double bmiValue = calculateBMI();
     if (bmiValue < 18.5) {

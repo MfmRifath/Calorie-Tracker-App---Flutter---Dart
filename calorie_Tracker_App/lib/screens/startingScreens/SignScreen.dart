@@ -147,7 +147,9 @@ class _SignScreenState extends State<SignScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                     Text('Create a New Account?'),
-                    TextButton(onPressed: (){},
+                    TextButton(onPressed: (){
+                      Navigator.pushNamed(context, '/signUp');
+                    },
                         child: Text('Sign Up',
                         style: TextStyle(
                           color: Color(0xff58B9A8)

@@ -5,19 +5,32 @@ class Food {
   double fat;
   double foodWeight;
 
+
   Food({
     required this.foodName,
     required this.calories,
     required this.protein,
     required this.fat,
-    required this.foodWeight
+    required this.foodWeight,
   });
 
-  String getNutritionalInfo() {
-    return 'Food: $foodName, Calories: $calories, Protein: $protein g, Fat: $fat g';
+  Map<String, dynamic> toMap() {
+    return {
+      'foodName': foodName,
+      'calories': calories,
+      'protein': protein,
+      'fat': fat,
+      'foodWeight': foodWeight,
+    };
   }
 
-  double calculateCaloriesPerGram() {
-    return calories / foodWeight;
+  static Food fromMap(Map<String, dynamic> map) {
+    return Food(
+      foodName: map['foodName'],
+      calories: map['calories'],
+      protein: map['protein'],
+      fat: map['fat'],
+      foodWeight: map['foodWeight'],
+    );
   }
 }
