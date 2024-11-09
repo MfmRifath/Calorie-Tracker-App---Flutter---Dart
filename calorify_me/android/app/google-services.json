@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "122625667956",
+    "project_id": "calorifyme-458e0",
+    "storage_bucket": "calorifyme-458e0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:122625667956:android:e75744b36c2287267e7221",
+        "android_client_info": {
+          "package_name": "com.rifath.calorify_me"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBJZz3Hu6nDT4wXKiFdWXXRwPWu7z6_ltY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
