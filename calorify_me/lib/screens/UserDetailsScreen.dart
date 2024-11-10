@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:animate_do/animate_do.dart'; // Add this for animations
+import 'package:animate_do/animate_do.dart'; // For animations
+import 'package:provider/provider.dart';
 import '../modals/Users.dart';
+import '../sevices/ThameProvider.dart';
+
 
 class UserDetailScreen extends StatelessWidget {
   final CustomUser user;
@@ -9,42 +12,45 @@ class UserDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.isDarkMode;
+
+    final backgroundColor = isDarkMode ? Colors.black : Colors.white;
+    final cardColor = isDarkMode ? Colors.grey[900] : Colors.grey[100];
+    final textColor = isDarkMode ? Colors.white : Colors.black;
+    final subtitleColor = isDarkMode ? Colors.white70 : Colors.black54;
+    final accentColor = isDarkMode ? Colors.greenAccent[400] : Colors.green[800];
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: backgroundColor,
       appBar: AppBar(
         title: Text(
           '${user.name} Details',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.transparent,
+        backgroundColor: isDarkMode ? Colors.transparent : Colors.green,
         centerTitle: true,
         elevation: 0,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.green[700]!, Colors.greenAccent[400]!],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
       ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Column(
             children: [
-              ZoomIn(child: _buildUserInfoSection()),
+              ZoomIn(child: _buildUserInfoSection(cardColor!, textColor, subtitleColor, accentColor!)),
               SizedBox(height: 20),
-              FadeInLeft(child: _buildBMISection()),
+              FadeInLeft(child: _buildBMISection(cardColor, textColor, accentColor)),
               SizedBox(height: 20),
-              FadeInRight(child: _buildTargetCaloriesSection()),
+              FadeInRight(child: _buildTargetCaloriesSection(cardColor, textColor, accentColor)),
               SizedBox(height: 20),
               SlideInUp(
                 child: _buildLogsSection(
                   context,
                   'Food Log',
-                  user.foodLog!.map((food) => '${food.foodName}: ${food.calories} Cal').toList(),
+                  user.foodLog?.map((food) => '${food.foodName}: ${food.calories} Cal').toList() ?? [],
+                  cardColor,
+                  textColor,
+                  accentColor!,
                 ),
               ),
               SizedBox(height: 20),
@@ -52,15 +58,16 @@ class UserDetailScreen extends StatelessWidget {
                 child: _buildLogsSection(
                   context,
                   'Consumed Food Log',
-                  user.consumedFoodLog!.map((food) => '${food.foodName}: ${food.calories} Cal').toList(),
+                  user.consumedFoodLog?.map((food) => '${food.foodName}: ${food.calories} Cal').toList() ?? [],
+                  cardColor,
+                  textColor,
+                  accentColor,
                 ),
               ),
               SizedBox(height: 20),
-              FadeInDown(child: _buildWaterLogSection()),
+              FadeInDown(child: _buildWaterLogSection(cardColor, textColor, accentColor)),
               SizedBox(height: 30),
-              Bounce(
-                child: _buildEditButton(context),
-              ),
+              Bounce(child: _buildEditButton(context, accentColor, textColor)),
             ],
           ),
         ),
@@ -68,66 +75,87 @@ class UserDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildUserInfoSection() {
+  Widget _buildUserInfoSection(Color cardColor, Color textColor, Color subtitleColor, Color accentColor) {
     return _buildCard(
       icon: Icons.person,
       title: 'User Info',
+      color: cardColor,
+      accentColor: accentColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _infoRow('Name:', user.name),
-          _infoRow('Age:', '${user.age}'),
-          _infoRow('Weight:', '${user.weight} kg'),
-          _infoRow('Height:', '${user.height} cm'),
+          _infoRow('Name:', user.name, textColor, subtitleColor),
+          _infoRow('Age:', '${user.age}', textColor, subtitleColor),
+          _infoRow('Weight:', '${user.weight} kg', textColor, subtitleColor),
+          _infoRow('Height:', '${user.height} cm', textColor, subtitleColor),
         ],
-      ),
+      ), textColor: textColor,
     );
   }
 
-  Widget _buildBMISection() {
+  Widget _buildBMISection(Color cardColor, Color textColor, Color accentColor) {
     final bmiValue = user.calculateBMI().toStringAsFixed(1);
     final bmiCategory = user.getBMICategory();
 
     return _buildCard(
       icon: Icons.monitor_weight_outlined,
       title: 'BMI',
+      color: cardColor,
+      accentColor: accentColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _infoRow('Value:', bmiValue),
-          _infoRow('Category:', bmiCategory),
+          _infoRow('Value:', bmiValue, textColor, textColor),
+          _infoRow('Category:', bmiCategory, textColor, textColor),
         ],
-      ),
+      ), textColor: textColor,
     );
   }
 
-  Widget _buildTargetCaloriesSection() {
+  Widget _buildTargetCaloriesSection(Color cardColor, Color textColor, Color accentColor) {
     return _buildCard(
       icon: Icons.local_fire_department_outlined,
       title: 'Target Calories',
+      color: cardColor,
+      accentColor: accentColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _infoRow('Target:', '${user.targetCalories} Cal'),
+          _infoRow('Target:', '${user.targetCalories} Cal', textColor, textColor),
         ],
-      ),
+      ), textColor: textColor,
     );
   }
 
-  Widget _buildLogsSection(BuildContext context, String title, List<String> logs) {
+  Widget _buildLogsSection(
+      BuildContext context,
+      String title,
+      List<String> logs,
+      Color cardColor,
+      Color textColor,
+      Color accentColor,
+      ) {
     return _buildCard(
       icon: Icons.food_bank_outlined,
       title: title,
+      color: cardColor,
+      accentColor: accentColor,
       expandable: true,
       child: Column(
         children: logs.isEmpty
-            ? [Text('No entries found.', style: TextStyle(color: Colors.grey[400]))]
-            : logs.map((log) => ListTile(title: Text(log, style: TextStyle(fontSize: 16, color: Colors.white)))).toList(),
-      ),
+            ? [Text('No entries found.', style: TextStyle(color: textColor))]
+            : logs
+            .map(
+              (log) => ListTile(
+            title: Text(log, style: TextStyle(fontSize: 16, color: textColor)),
+          ),
+        )
+            .toList(),
+      ), textColor: textColor,
     );
   }
 
-  Widget _buildWaterLogSection() {
+  Widget _buildWaterLogSection(Color cardColor, Color textColor, Color accentColor) {
     final consumed = user.waterLog.currentWaterConsumption;
     final target = user.waterLog.targetWaterConsumption;
     final progress = (consumed / target).clamp(0.0, 1.0);
@@ -135,24 +163,26 @@ class UserDetailScreen extends StatelessWidget {
     return _buildCard(
       icon: Icons.opacity,
       title: 'Water Log',
+      color: cardColor,
+      accentColor: accentColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _infoRow('Consumed:', '${consumed.toStringAsFixed(1)} ml'),
-          _infoRow('Target:', '${target.toStringAsFixed(1)} ml'),
+          _infoRow('Consumed:', '${consumed.toStringAsFixed(1)} ml', textColor, textColor),
+          _infoRow('Target:', '${target.toStringAsFixed(1)} ml', textColor, textColor),
           SizedBox(height: 10),
           LinearProgressIndicator(
             value: progress,
             backgroundColor: Colors.grey[800],
-            color: Colors.greenAccent[400],
+            color: accentColor,
             minHeight: 8,
           ),
         ],
-      ),
+      ), textColor: textColor,
     );
   }
 
-  Widget _buildEditButton(BuildContext context) {
+  Widget _buildEditButton(BuildContext context, Color accentColor, Color textColor) {
     return ElevatedButton.icon(
       onPressed: () {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -160,15 +190,15 @@ class UserDetailScreen extends StatelessWidget {
         );
       },
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.greenAccent[400],
+        backgroundColor: accentColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
         padding: EdgeInsets.symmetric(vertical: 14, horizontal: 24),
         elevation: 8,
       ),
-      icon: Icon(Icons.edit, color: Colors.black),
-      label: Text('Edit User', style: TextStyle(fontSize: 16, color: Colors.black)),
+      icon: Icon(Icons.edit, color: textColor),
+      label: Text('Edit User', style: TextStyle(fontSize: 16, color: textColor)),
     );
   }
 
@@ -176,19 +206,23 @@ class UserDetailScreen extends StatelessWidget {
     required IconData icon,
     required String title,
     required Widget child,
+    required Color color,
+    required Color accentColor,
+    required Color textColor,
+    
     bool expandable = false,
   }) {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      color: Colors.grey[900],
+      color: color,
       elevation: 10,
       margin: EdgeInsets.only(bottom: 16),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: expandable
             ? ExpansionTile(
-          leading: Icon(icon, color: Colors.greenAccent[400]),
-          title: _sectionTitle(title, isTile: true),
+          leading: Icon(icon, color: accentColor),
+          title: _sectionTitle(title, accentColor),
           children: [child],
         )
             : Column(
@@ -196,9 +230,9 @@ class UserDetailScreen extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(icon, color: Colors.greenAccent[400]),
+                Icon(icon, color: accentColor),
                 SizedBox(width: 8),
-                _sectionTitle(title),
+                _sectionTitle(title, textColor),
               ],
             ),
             SizedBox(height: 16),
@@ -209,25 +243,25 @@ class UserDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _sectionTitle(String title, {bool isTile = false}) {
+  Widget _sectionTitle(String title, Color color) {
     return Text(
       title,
       style: TextStyle(
         fontSize: 18,
         fontWeight: FontWeight.bold,
-        color: isTile ? Colors.greenAccent[400] : Colors.white,
+        color: color,
       ),
     );
   }
 
-  Widget _infoRow(String label, String value) {
+  Widget _infoRow(String label, String value, Color labelColor, Color valueColor) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontSize: 16, color: Colors.white70, fontWeight: FontWeight.w600)),
-          Text(value, style: TextStyle(fontSize: 16, color: Colors.white)),
+          Text(label, style: TextStyle(fontSize: 16, color: labelColor, fontWeight: FontWeight.w600)),
+          Text(value, style: TextStyle(fontSize: 16, color: valueColor)),
         ],
       ),
     );

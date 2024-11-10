@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+ // Import ThemeProvider
+import '../../sevices/ThameProvider.dart';
 import '../AdminScreen.dart';
-
 import '../DairyScreen.dart';
 import '../ReportScreen.dart';
-
 import '../UserProfileScreen.dart';
-import 'HomeScreen.dart'; // Import the new screen
+import 'HomeScreen.dart';
 
 class MainScreen extends StatefulWidget {
   @override
@@ -21,11 +22,14 @@ class _MainScreenState extends State<MainScreen> {
     DiaryScreen(),
     ReportsScreen(),
     AdminScreen(),
-    UserProfileScreen(), // Add this screen
+    UserProfileScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.isDarkMode;
+
     return Scaffold(
       body: AnimatedSwitcher(
         duration: Duration(milliseconds: 300),
@@ -36,11 +40,11 @@ class _MainScreenState extends State<MainScreen> {
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Colors.black,
+          color: isDarkMode ? Colors.black : Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black45,
+              color: isDarkMode ? Colors.black45 : Colors.grey.withOpacity(0.2),
               offset: Offset(0, -2),
               blurRadius: 8.0,
             ),
@@ -53,11 +57,11 @@ class _MainScreenState extends State<MainScreen> {
               _currentIndex = index;
             });
           },
-          selectedItemColor: Colors.greenAccent,
-          unselectedItemColor: Colors.white70,
+          selectedItemColor: isDarkMode ? Colors.greenAccent : Colors.green[700],
+          unselectedItemColor: isDarkMode ? Colors.white70 : Colors.black54,
           showUnselectedLabels: true,
           type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.transparent,
+          backgroundColor: isDarkMode ? Colors.black : Colors.white,
           elevation: 0,
           items: [
             BottomNavigationBarItem(
@@ -78,15 +82,17 @@ class _MainScreenState extends State<MainScreen> {
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.person),
-              label: 'Profile', // Profile tab
+              label: 'Profile',
             ),
           ],
           selectedLabelStyle: GoogleFonts.poppins(
             fontSize: 12.0,
             fontWeight: FontWeight.w600,
+            color: isDarkMode ? Colors.greenAccent : Colors.green[700],
           ),
           unselectedLabelStyle: GoogleFonts.poppins(
             fontSize: 12.0,
+            color: isDarkMode ? Colors.white70 : Colors.black54,
           ),
         ),
       ),

@@ -2,6 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:provider/provider.dart';
+
+import '../../sevices/ThameProvider.dart';
+ // Import ThemeProvider
 
 class SignScreen extends StatefulWidget {
   const SignScreen({super.key});
@@ -12,11 +16,14 @@ class SignScreen extends StatefulWidget {
 
 class _SignScreenState extends State<SignScreen> {
   void _showBottomSheet(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    final isDarkMode = themeProvider.isDarkMode;
+
     showModalBottomSheet(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: isDarkMode ? Colors.black : Colors.white,
       context: context,
       builder: (BuildContext context) {
         return SlideInUp(
@@ -31,7 +38,7 @@ class _SignScreenState extends State<SignScreen> {
                   height: 5,
                   margin: EdgeInsets.only(bottom: 10),
                   decoration: BoxDecoration(
-                    color: Colors.grey[300],
+                    color: isDarkMode ? Colors.grey[700] : Colors.grey[300],
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
@@ -60,6 +67,9 @@ class _SignScreenState extends State<SignScreen> {
     required String label,
     required VoidCallback onPressed,
   }) {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    final isDarkMode = themeProvider.isDarkMode;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: SizedBox(
@@ -72,6 +82,7 @@ class _SignScreenState extends State<SignScreen> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12.0),
             ),
+            backgroundColor: isDarkMode ? Colors.grey[900] : Colors.white,
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -81,7 +92,11 @@ class _SignScreenState extends State<SignScreen> {
               Text(
                 label,
                 style: GoogleFonts.poppins(
-                  textStyle: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w500),
+                  textStyle: TextStyle(
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.w500,
+                    color: isDarkMode ? Colors.white : Colors.black87,
+                  ),
                 ),
               ),
             ],
@@ -93,6 +108,9 @@ class _SignScreenState extends State<SignScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.isDarkMode;
+
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -102,7 +120,7 @@ class _SignScreenState extends State<SignScreen> {
               duration: Duration(milliseconds: 800),
               child: Column(
                 children: [
-                  SizedBox(height: 250.0,),
+                  SizedBox(height: 250.0),
                   Image.asset('assets/images/logo.png', height: 120),
                   Text(
                     'Welcome',
@@ -110,7 +128,7 @@ class _SignScreenState extends State<SignScreen> {
                       textStyle: TextStyle(
                         fontSize: 28.0,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                        color: isDarkMode ? Colors.greenAccent : Colors.black87,
                       ),
                     ),
                   ),
@@ -122,7 +140,7 @@ class _SignScreenState extends State<SignScreen> {
                       style: GoogleFonts.poppins(
                         textStyle: TextStyle(
                           fontSize: 16.0,
-                          color: Colors.grey[600],
+                          color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
                         ),
                       ),
                     ),
@@ -141,7 +159,7 @@ class _SignScreenState extends State<SignScreen> {
                       child: TextButton(
                         onPressed: () => _showBottomSheet(context),
                         style: TextButton.styleFrom(
-                          backgroundColor: Color(0xff006d77),
+                          backgroundColor: isDarkMode ? Colors.greenAccent[700] : Color(0xff006d77),
                           padding: EdgeInsets.symmetric(vertical: 16.0),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12.0),
@@ -174,7 +192,7 @@ class _SignScreenState extends State<SignScreen> {
                           child: Text(
                             'Sign Up',
                             style: GoogleFonts.poppins(
-                              color: Color(0xff006d77),
+                              color: isDarkMode ? Colors.greenAccent : Color(0xff006d77),
                               fontWeight: FontWeight.bold,
                             ),
                           ),

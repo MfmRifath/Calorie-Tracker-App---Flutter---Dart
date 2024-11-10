@@ -2,42 +2,41 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart'; // For animations
+import 'package:provider/provider.dart';
+
 import '../modals/Food.dart';
+import '../sevices/ThameProvider.dart';
 import 'AddFoodScreen.dart';
 
 class FoodManagementScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.isDarkMode;
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: isDarkMode ? Colors.black : Colors.white,
       appBar: AppBar(
         title: Text(
           'Manage Food Items',
           style: TextStyle(
-            color: Colors.white,
+            color: isDarkMode ? Colors.greenAccent : Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 22,
           ),
         ),
-        backgroundColor: Colors.transparent,
+        backgroundColor: isDarkMode ? Colors.black : Colors.teal,
         centerTitle: true,
         elevation: 0,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.green[800]!, Colors.greenAccent[400]!],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance.collection('Food').snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
-              child: CupertinoActivityIndicator(color: Colors.greenAccent[400]),
+              child: CupertinoActivityIndicator(
+                color: isDarkMode ? Colors.greenAccent : Colors.teal,
+              ),
             );
           }
 
@@ -45,7 +44,10 @@ class FoodManagementScreen extends StatelessWidget {
             return Center(
               child: Text(
                 'Something went wrong!',
-                style: TextStyle(color: Colors.redAccent, fontSize: 18),
+                style: TextStyle(
+                  color: isDarkMode ? Colors.redAccent : Colors.red,
+                  fontSize: 18,
+                ),
               ),
             );
           }
@@ -54,7 +56,10 @@ class FoodManagementScreen extends StatelessWidget {
             return Center(
               child: Text(
                 'No food items available.',
-                style: TextStyle(color: Colors.grey[400], fontSize: 18),
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white54 : Colors.grey,
+                  fontSize: 18,
+                ),
               ),
             );
           }
@@ -75,7 +80,7 @@ class FoodManagementScreen extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  color: Colors.grey[850],
+                  color: isDarkMode ? Colors.grey[850] : Colors.grey[200],
                   elevation: 6,
                   child: ListTile(
                     contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
@@ -88,19 +93,26 @@ class FoodManagementScreen extends StatelessWidget {
                         height: 50,
                         fit: BoxFit.cover,
                       )
-                          : Icon(Icons.fastfood, size: 50, color: Colors.greenAccent),
+                          : Icon(
+                        Icons.fastfood,
+                        size: 50,
+                        color: isDarkMode ? Colors.greenAccent : Colors.teal,
+                      ),
                     ),
                     title: Text(
                       food.foodName,
                       style: TextStyle(
-                        color: Colors.white,
+                        color: isDarkMode ? Colors.white : Colors.black,
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                       ),
                     ),
                     subtitle: Text(
                       '${food.calories} Cal | ${food.protein}g Protein | ${food.fat}g Fat',
-                      style: TextStyle(color: Colors.white70, fontSize: 14),
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                        fontSize: 14,
+                      ),
                     ),
                     trailing: IconButton(
                       icon: Icon(Icons.delete, color: Colors.redAccent),
@@ -116,8 +128,8 @@ class FoodManagementScreen extends StatelessWidget {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.greenAccent[400],
-        child: Icon(Icons.add, color: Colors.black),
+        backgroundColor: isDarkMode ? Colors.greenAccent : Colors.teal,
+        child: Icon(Icons.add, color: isDarkMode ? Colors.black : Colors.white),
         onPressed: () {
           Navigator.push(
             context,

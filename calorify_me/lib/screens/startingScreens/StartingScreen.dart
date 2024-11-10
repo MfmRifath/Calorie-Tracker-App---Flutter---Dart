@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:provider/provider.dart'; // Import Provider for Theme
+import '../../sevices/ThameProvider.dart';
+ // Import ThemeProvider
 
 class StartingScreen extends StatelessWidget {
   StartingScreen({
@@ -15,6 +18,9 @@ class StartingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.isDarkMode;
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -44,7 +50,7 @@ class StartingScreen extends StatelessWidget {
                     textStyle: TextStyle(
                       fontSize: 28.0,
                       fontWeight: FontWeight.bold,
-                      color: Colors.greenAccent,
+                      color: isDarkMode ? Colors.greenAccent : Colors.teal[800],
                     ),
                   ),
                 ),
@@ -61,7 +67,7 @@ class StartingScreen extends StatelessWidget {
                       textStyle: TextStyle(
                         fontSize: 16.0,
                         fontWeight: FontWeight.normal,
-                        color: Colors.grey[300],
+                        color: isDarkMode ? Colors.grey[300] : Colors.grey[800],
                         height: 1.5,
                       ),
                     ),
@@ -76,7 +82,7 @@ class StartingScreen extends StatelessWidget {
                   width: 60,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: Colors.greenAccent,
+                    color: isDarkMode ? Colors.greenAccent : Colors.teal[700],
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
@@ -86,7 +92,7 @@ class StartingScreen extends StatelessWidget {
           ),
         ),
       ),
-      backgroundColor: Colors.black, // Black background
+      backgroundColor: isDarkMode ? Colors.black : Colors.white, // Adaptive background
     );
   }
 }

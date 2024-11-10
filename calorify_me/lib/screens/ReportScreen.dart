@@ -4,20 +4,25 @@ import 'package:provider/provider.dart';
 import 'dart:math';
 import 'package:animate_do/animate_do.dart';
 import '../sevices/FoodProvider.dart';
+import '../sevices/ThameProvider.dart';
 import '../sevices/UserProvider.dart';
 
-class ReportsScreen extends StatelessWidget {
-  final Color primaryGreen = Color(0xFF1B5E20);
-  final Color lightGreen = Color(0xFF66BB6A);
-  final Color darkGreen = Color(0xFF004D40);
-  final Color accentGreen = Color(0xFF81C784);
-  final Color black = Colors.black;
 
+class ReportsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.isDarkMode;
+
+    final Color primaryGreen = isDarkMode ? Colors.greenAccent : Color(0xFF1B5E20);
+    final Color lightGreen = isDarkMode ? Colors.greenAccent : Color(0xFF66BB6A);
+    final Color darkGreen = isDarkMode ? Colors.grey[850]! : Color(0xFF004D40);
+    final Color accentGreen = isDarkMode ? Colors.lightGreenAccent : Color(0xFF81C784);
+    final Color backgroundColor = isDarkMode ? Colors.black : Color(0xFFE8F5E9);
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: black,
+        backgroundColor: isDarkMode ? Colors.black : Colors.white,
         elevation: 4,
         title: FadeIn(
           duration: Duration(milliseconds: 800),
@@ -32,7 +37,7 @@ class ReportsScreen extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      backgroundColor: black,
+      backgroundColor: backgroundColor,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -60,27 +65,27 @@ class ReportsScreen extends StatelessWidget {
                 children: [
                   FadeInUp(
                     duration: Duration(milliseconds: 700),
-                    child: buildMonthlySummary(foodProvider),
+                    child: buildMonthlySummary(foodProvider, lightGreen, accentGreen),
                   ),
                   SizedBox(height: 30),
                   FadeInLeft(
                     duration: Duration(milliseconds: 700),
-                    child: buildCaloriesTrendChart(foodProvider),
+                    child: buildCaloriesTrendChart(foodProvider, lightGreen, accentGreen),
                   ),
                   SizedBox(height: 30),
                   FadeInRight(
                     duration: Duration(milliseconds: 700),
-                    child: buildNutrientBreakdownChart(foodProvider),
+                    child: buildNutrientBreakdownChart(foodProvider, lightGreen),
                   ),
                   SizedBox(height: 30),
                   FadeInUp(
                     duration: Duration(milliseconds: 700),
-                    child: buildHydrationProgress(userProvider),
+                    child: buildHydrationProgress(userProvider, lightGreen, accentGreen),
                   ),
                   SizedBox(height: 30),
                   ZoomIn(
                     duration: Duration(milliseconds: 700),
-                    child: buildMealConsistencyChart(foodProvider),
+                    child: buildMealConsistencyChart(foodProvider, lightGreen, accentGreen),
                   ),
                 ],
               );
@@ -91,7 +96,7 @@ class ReportsScreen extends StatelessWidget {
     );
   }
 
-  Widget buildMonthlySummary(FoodProvider foodProvider) {
+  Widget buildMonthlySummary(FoodProvider foodProvider, Color lightGreen, Color accentGreen) {
     final totalCalories = foodProvider.dailyFoodLog.fold(0, (sum, food) => sum + food.calories);
     final avgDailyCalories = (totalCalories / foodProvider.dailyFoodLog.length).toInt();
     final highestCalories = foodProvider.dailyFoodLog.map((e) => e.calories).reduce(max);
@@ -101,7 +106,7 @@ class ReportsScreen extends StatelessWidget {
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [darkGreen, black],
+          colors: [lightGreen.withOpacity(0.2), accentGreen.withOpacity(0.4)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -133,7 +138,7 @@ class ReportsScreen extends StatelessWidget {
               buildSummaryCard("Total", "$totalCalories Cal", accentGreen),
               buildSummaryCard("Avg Daily", "$avgDailyCalories Cal", lightGreen),
               buildSummaryCard("Highest", "$highestCalories Cal", Colors.redAccent),
-              buildSummaryCard("Lowest", "$lowestCalories Cal", darkGreen),
+              buildSummaryCard("Lowest", "$lowestCalories Cal", Colors.orangeAccent),
             ],
           ),
         ],
@@ -161,7 +166,7 @@ class ReportsScreen extends StatelessWidget {
     );
   }
 
-  Widget buildCaloriesTrendChart(FoodProvider foodProvider) {
+  Widget buildCaloriesTrendChart(FoodProvider foodProvider, Color lightGreen, Color accentGreen) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -223,7 +228,7 @@ class ReportsScreen extends StatelessWidget {
     );
   }
 
-  Widget buildNutrientBreakdownChart(FoodProvider foodProvider) {
+  Widget buildNutrientBreakdownChart(FoodProvider foodProvider, Color lightGreen) {
     final totalCarbs = foodProvider.dailyFoodLog.fold<double>(0.0, (sum, food) => sum + food.calories);
     final totalProteins = foodProvider.dailyFoodLog.fold<double>(0.0, (sum, food) => sum + food.protein);
     final totalFats = foodProvider.dailyFoodLog.fold<double>(0.0, (sum, food) => sum + food.fat);
@@ -289,7 +294,7 @@ class ReportsScreen extends StatelessWidget {
     );
   }
 
-  Widget buildHydrationProgress(UserProvider userProvider) {
+  Widget buildHydrationProgress(UserProvider userProvider, Color lightGreen, Color accentGreen) {
     final waterLog = userProvider.user?.waterLog;
     final totalWater = waterLog?.currentWaterConsumption ?? 0.0;
     final targetWater = waterLog?.targetWaterConsumption ?? 3000.0;
@@ -320,7 +325,7 @@ class ReportsScreen extends StatelessWidget {
     );
   }
 
-  Widget buildMealConsistencyChart(FoodProvider foodProvider) {
+  Widget buildMealConsistencyChart(FoodProvider foodProvider, Color lightGreen, Color accentGreen) {
     final mealCounts = {
       "Breakfast": 0,
       "Lunch": 0,

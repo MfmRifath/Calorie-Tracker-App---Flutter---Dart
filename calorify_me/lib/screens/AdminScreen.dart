@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:provider/provider.dart';
+
+import '../sevices/ThameProvider.dart';
 import 'FoodManagement.dart';
 import 'UserManagementScreen.dart';
 
@@ -7,13 +10,22 @@ class AdminScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.isDarkMode;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Admin Panel'),
-        backgroundColor: Colors.green,
+        title: Text(
+          'Admin Panel',
+          style: TextStyle(
+            color: isDarkMode ? Colors.greenAccent : Colors.white,
+          ),
+        ),
+        backgroundColor: isDarkMode ? Colors.black : Colors.green,
         elevation: 0,
+        centerTitle: true,
       ),
+      backgroundColor: isDarkMode ? Colors.black : Colors.white,
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: GridView(
@@ -36,6 +48,7 @@ class AdminScreen extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => UserManagementScreen()),
                   );
                 },
+                isDarkMode: isDarkMode,
               ),
             ),
             BounceInRight(
@@ -50,6 +63,7 @@ class AdminScreen extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => FoodManagementScreen()),
                   );
                 },
+                isDarkMode: isDarkMode,
               ),
             ),
           ],
@@ -63,6 +77,7 @@ class AdminScreen extends StatelessWidget {
         required IconData icon,
         required String title,
         required VoidCallback onTap,
+        required bool isDarkMode,
       }) {
     return GestureDetector(
       onTap: onTap,
@@ -71,11 +86,14 @@ class AdminScreen extends StatelessWidget {
         child: Card(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
           elevation: 5,
+          color: isDarkMode ? Colors.black87 : Colors.white,
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(15),
               gradient: LinearGradient(
-                colors: [Colors.green.shade300, Colors.green.shade700],
+                colors: isDarkMode
+                    ? [Colors.grey.shade800, Colors.grey.shade900]
+                    : [Colors.green.shade300, Colors.green.shade700],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),

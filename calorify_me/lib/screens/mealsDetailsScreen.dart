@@ -2,7 +2,9 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../modals/Food.dart';
+import '../sevices/ThameProvider.dart';
 import '../sevices/UserProvider.dart';
+
 
 class MealDetailsScreen extends StatelessWidget {
   final Food meal;
@@ -12,20 +14,22 @@ class MealDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.isDarkMode;
 
     return Scaffold(
-      backgroundColor: Color(0xFFE8F5E9),
+      backgroundColor: isDarkMode ? Colors.black : Color(0xFFE8F5E9),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: isDarkMode ? Colors.black : Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: isDarkMode ? Colors.white : Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           'Meal Details',
           style: TextStyle(
-            color: Colors.black,
+            color: isDarkMode ? Colors.white : Colors.black,
             fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
@@ -56,15 +60,15 @@ class MealDetailsScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildMealTitle(),
+                    _buildMealTitle(isDarkMode),
                     SizedBox(height: 10),
-                    _buildMealStats(),
+                    _buildMealStats(isDarkMode),
                     SizedBox(height: 20),
-                    _buildMealDescription(),
+                    _buildMealDescription(isDarkMode),
                     SizedBox(height: 20),
-                    _buildLogMealButton(userProvider, context),
+                    _buildLogMealButton(userProvider, context, isDarkMode),
                     SizedBox(height: 20),
-                    _buildNutritionFacts(),
+                    _buildNutritionFacts(isDarkMode),
                   ],
                 ),
               ),
@@ -99,7 +103,7 @@ class MealDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMealTitle() {
+  Widget _buildMealTitle(bool isDarkMode) {
     return ZoomIn(
       duration: Duration(milliseconds: 800),
       child: Text(
@@ -107,30 +111,30 @@ class MealDetailsScreen extends StatelessWidget {
         style: TextStyle(
           fontSize: 28,
           fontWeight: FontWeight.bold,
-          color: Color(0xFF388E3C),
+          color: isDarkMode ? Colors.greenAccent : Color(0xFF388E3C),
         ),
       ),
     );
   }
 
-  Widget _buildMealStats() {
+  Widget _buildMealStats(bool isDarkMode) {
     return SlideInLeft(
       duration: Duration(milliseconds: 800),
       child: Text(
         '${meal.calories} Cal | ${meal.protein}g Protein | ${meal.fat}g Fat',
-        style: TextStyle(fontSize: 16, color: Colors.grey),
+        style: TextStyle(fontSize: 16, color: isDarkMode ? Colors.white54 : Colors.grey),
       ),
     );
   }
 
-  Widget _buildMealDescription() {
+  Widget _buildMealDescription(bool isDarkMode) {
     return ElasticIn(
       duration: Duration(milliseconds: 800),
       child: Container(
         padding: EdgeInsets.all(16),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(15),
-          color: Colors.white,
+          color: isDarkMode ? Colors.grey[850] : Colors.white,
           boxShadow: [
             BoxShadow(
               color: Colors.grey.withOpacity(0.3),
@@ -141,13 +145,16 @@ class MealDetailsScreen extends StatelessWidget {
         ),
         child: Text(
           'A delicious ${meal.foodName} recipe with balanced nutrition. Perfect for any meal!',
-          style: TextStyle(fontSize: 16, color: Colors.grey[800]),
+          style: TextStyle(
+            fontSize: 16,
+            color: isDarkMode ? Colors.white : Colors.grey[800],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildLogMealButton(UserProvider userProvider, BuildContext context) {
+  Widget _buildLogMealButton(UserProvider userProvider, BuildContext context, bool isDarkMode) {
     return Center(
       child: BounceInUp(
         duration: Duration(milliseconds: 600),
@@ -171,14 +178,18 @@ class MealDetailsScreen extends StatelessWidget {
           },
           child: Text(
             'Log this Meal',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: isDarkMode ? Colors.black : Colors.white,
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildNutritionFacts() {
+  Widget _buildNutritionFacts(bool isDarkMode) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -189,12 +200,12 @@ class MealDetailsScreen extends StatelessWidget {
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF388E3C),
+              color: isDarkMode ? Colors.greenAccent : Color(0xFF388E3C),
             ),
           ),
         ),
         SizedBox(height: 10),
-        NutritionFactsCard(meal: meal),
+        NutritionFactsCard(meal: meal, isDarkMode: isDarkMode),
       ],
     );
   }
@@ -202,8 +213,9 @@ class MealDetailsScreen extends StatelessWidget {
 
 class NutritionFactsCard extends StatelessWidget {
   final Food meal;
+  final bool isDarkMode;
 
-  NutritionFactsCard({required this.meal});
+  NutritionFactsCard({required this.meal, required this.isDarkMode});
 
   @override
   Widget build(BuildContext context) {
@@ -212,16 +224,17 @@ class NutritionFactsCard extends StatelessWidget {
       child: Card(
         margin: EdgeInsets.symmetric(vertical: 10),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        color: isDarkMode ? Colors.grey[850] : Colors.white,
         elevation: 3,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              NutritionFactRow(label: 'Calories', value: '${meal.calories}'),
-              NutritionFactRow(label: 'Protein', value: '${meal.protein}g'),
-              NutritionFactRow(label: 'Fat', value: '${meal.fat}g'),
-              NutritionFactRow(label: 'Weight', value: '${meal.foodWeight}g'),
+              NutritionFactRow(label: 'Calories', value: '${meal.calories}', isDarkMode: isDarkMode),
+              NutritionFactRow(label: 'Protein', value: '${meal.protein}g', isDarkMode: isDarkMode),
+              NutritionFactRow(label: 'Fat', value: '${meal.fat}g', isDarkMode: isDarkMode),
+              NutritionFactRow(label: 'Weight', value: '${meal.foodWeight}g', isDarkMode: isDarkMode),
             ],
           ),
         ),
@@ -233,8 +246,9 @@ class NutritionFactsCard extends StatelessWidget {
 class NutritionFactRow extends StatelessWidget {
   final String label;
   final String value;
+  final bool isDarkMode;
 
-  NutritionFactRow({required this.label, required this.value});
+  NutritionFactRow({required this.label, required this.value, required this.isDarkMode});
 
   @override
   Widget build(BuildContext context) {
@@ -243,8 +257,8 @@ class NutritionFactRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontSize: 16, color: Colors.grey[800])),
-          Text(value, style: TextStyle(fontSize: 16, color: Colors.grey[800])),
+          Text(label, style: TextStyle(fontSize: 16, color: isDarkMode ? Colors.white70 : Colors.grey[800])),
+          Text(value, style: TextStyle(fontSize: 16, color: isDarkMode ? Colors.white : Colors.grey[800])),
         ],
       ),
     );

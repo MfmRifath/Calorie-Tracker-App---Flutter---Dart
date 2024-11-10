@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../modals/CustomFood.dart';
 import '../modals/Food.dart';
 import '../sevices/FoodProvider.dart';
 import '../sevices/UserProvider.dart';
+import '../sevices/ThameProvider.dart';
 
 class AddFoodDialog extends StatefulWidget {
   final String mealType; // Meal type passed from DiaryScreen
@@ -44,16 +46,31 @@ class _AddFoodDialogState extends State<AddFoodDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.isDarkMode;
+
     final userProvider = Provider.of<UserProvider>(context);
     final foodSuggestions = userProvider.foodLog;
 
     return AlertDialog(
+      backgroundColor: isDarkMode ? Colors.black : Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      title: Text("Add Food to ${widget.mealType}"),
+      title: Text(
+        "Add Food to ${widget.mealType}",
+        style: GoogleFonts.poppins(
+          fontSize: 20,
+          color: isDarkMode ? Colors.greenAccent : Colors.teal[800],
+        ),
+      ),
       content: isLoading
           ? Center(child: CircularProgressIndicator())
           : foodSuggestions.isEmpty
-          ? Text("No food items found in your log.")
+          ? Text(
+        "No food items found in your log.",
+        style: GoogleFonts.poppins(
+          color: isDarkMode ? Colors.grey[400] : Colors.black87,
+        ),
+      )
           : Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -63,16 +80,29 @@ class _AddFoodDialogState extends State<AddFoodDialog> {
               padding: const EdgeInsets.only(bottom: 8.0),
               child: Text(
                 errorMessage!,
-                style: TextStyle(color: Colors.red),
+                style: TextStyle(color: Colors.redAccent),
               ),
             ),
           DropdownButton<Food>(
-            hint: Text("Select Food"),
+            hint: Text(
+              "Select Food",
+              style: GoogleFonts.poppins(
+                color: isDarkMode ? Colors.greenAccent : Colors.black,
+              ),
+            ),
             value: selectedFood,
+            dropdownColor: isDarkMode ? Colors.black87 : Colors.white,
             items: foodSuggestions.map((food) {
               return DropdownMenuItem(
                 value: food,
-                child: Text(food.foodName),
+                child: Text(
+                  food.foodName,
+                  style: GoogleFonts.poppins(
+                    color: isDarkMode
+                        ? Colors.greenAccent
+                        : Colors.teal[800],
+                  ),
+                ),
               );
             }).toList(),
             onChanged: (food) => setState(() => selectedFood = food),
@@ -80,18 +110,53 @@ class _AddFoodDialogState extends State<AddFoodDialog> {
           TextField(
             controller: _quantityController,
             keyboardType: TextInputType.number,
-            decoration: InputDecoration(labelText: "Quantity (grams)"),
+            style: GoogleFonts.poppins(
+              color: isDarkMode ? Colors.greenAccent : Colors.black87,
+            ),
+            decoration: InputDecoration(
+              labelText: "Quantity (grams)",
+              labelStyle: GoogleFonts.poppins(
+                color: isDarkMode ? Colors.greenAccent : Colors.teal[800],
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(
+                  color:
+                  isDarkMode ? Colors.greenAccent : Colors.teal,
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(
+                  color: isDarkMode
+                      ? Colors.greenAccent
+                      : Colors.teal[800]!,
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
           ),
         ],
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: Text("Cancel"),
+          child: Text(
+            "Cancel",
+            style: GoogleFonts.poppins(
+              color: isDarkMode ? Colors.greenAccent : Colors.teal,
+            ),
+          ),
         ),
         ElevatedButton(
           onPressed: _addFood,
-          child: Text("Add Food"),
+          style: ElevatedButton.styleFrom(
+            backgroundColor:
+            isDarkMode ? Colors.greenAccent : Colors.teal[700],
+          ),
+          child: Text(
+            "Add Food",
+            style: GoogleFonts.poppins(color: Colors.white),
+          ),
         ),
       ],
     );

@@ -1,6 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:provider/provider.dart';
+// Import ThemeProvider
+import '../../sevices/ThameProvider.dart';
 import 'SignScreen.dart';
 import 'StartingScreen.dart';
 
@@ -33,6 +36,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.isDarkMode;
+
     return Scaffold(
       body: Stack(
         children: [
@@ -40,7 +46,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFF0F2027), Color(0xFF2C5364)],
+                colors: isDarkMode
+                    ? [Color(0xFF0F2027), Color(0xFF2C5364)]
+                    : [Color(0xFFffffff), Color(0xFFc3e8ff)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -80,7 +88,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     },
                     icon: Icon(
                       CupertinoIcons.back,
-                      color: Colors.white,
+                      color: isDarkMode ? Colors.white : Colors.black,
                       size: 28.0,
                     ),
                   ),
@@ -96,10 +104,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: currentPage == index
-                            ? Colors.greenAccent[400]
-                            : Colors.white54,
+                            ? (isDarkMode ? Colors.greenAccent[400] : Colors.blueAccent)
+                            : Colors.grey,
                         boxShadow: currentPage == index
-                            ? [BoxShadow(color: Colors.greenAccent, blurRadius: 6)]
+                            ? [BoxShadow(color: isDarkMode ? Colors.greenAccent : Colors.blue, blurRadius: 6)]
                             : [],
                       ),
                     ),
@@ -118,7 +126,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.greenAccent[700],
+                      backgroundColor: isDarkMode ? Colors.greenAccent[700] : Colors.blueAccent,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.0),
                       ),
@@ -130,7 +138,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     child: Text(
                       "Get Started",
                       style: TextStyle(
-                        color: Colors.black,
+                        color: isDarkMode ? Colors.black : Colors.white,
                         fontSize: 18.0,
                         fontWeight: FontWeight.bold,
                       ),
@@ -148,7 +156,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     },
                     icon: Icon(
                       CupertinoIcons.forward,
-                      color: Colors.white,
+                      color: isDarkMode ? Colors.white : Colors.black,
                       size: 28.0,
                     ),
                   ),

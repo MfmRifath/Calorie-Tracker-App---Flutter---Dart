@@ -1,19 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:animate_do/animate_do.dart'; // Ensure this is imported
+import 'package:provider/provider.dart';
 import '../modals/Users.dart';
+
+import '../sevices/ThameProvider.dart';
 import 'UserDetailsScreen.dart';
 
 class UserManagementScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.isDarkMode;
+
+    final backgroundColor = isDarkMode ? Colors.black : Colors.white;
+    final cardColor = isDarkMode ? Colors.grey[850] : Colors.grey[100];
+    final textColor = isDarkMode ? Colors.white : Colors.black;
+    final subtitleColor = isDarkMode ? Colors.white70 : Colors.black54;
+
     return Scaffold(
+      backgroundColor: backgroundColor,
       appBar: AppBar(
         title: Text(
           'Manage Users',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
         ),
-        backgroundColor: Colors.green[700],
+        backgroundColor: isDarkMode ? Colors.transparent : Colors.green[700],
         centerTitle: true,
         elevation: 0,
       ),
@@ -25,14 +37,19 @@ class UserManagementScreen extends StatelessWidget {
           }
 
           if (snapshot.hasError) {
-            return Center(child: Text("Error loading users: ${snapshot.error}"));
+            return Center(
+              child: Text(
+                "Error loading users: ${snapshot.error}",
+                style: TextStyle(color: textColor),
+              ),
+            );
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return Center(
               child: Text(
                 "No users found.",
-                style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                style: TextStyle(fontSize: 16, color: subtitleColor),
               ),
             );
           }
@@ -49,14 +66,19 @@ class UserManagementScreen extends StatelessWidget {
               }
 
               if (usersSnapshot.hasError) {
-                return Center(child: Text("Error loading user data: ${usersSnapshot.error}"));
+                return Center(
+                  child: Text(
+                    "Error loading user data: ${usersSnapshot.error}",
+                    style: TextStyle(color: textColor),
+                  ),
+                );
               }
 
               if (!usersSnapshot.hasData || usersSnapshot.data!.isEmpty) {
                 return Center(
                   child: Text(
                     "No user data available.",
-                    style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                    style: TextStyle(fontSize: 16, color: subtitleColor),
                   ),
                 );
               }
@@ -71,6 +93,7 @@ class UserManagementScreen extends StatelessWidget {
                     duration: Duration(milliseconds: 500 + (index * 100)),
                     child: Card(
                       margin: const EdgeInsets.symmetric(vertical: 8.0),
+                      color: cardColor,
                       elevation: 3,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       child: ListTile(
@@ -84,15 +107,15 @@ class UserManagementScreen extends StatelessWidget {
                         ),
                         title: Text(
                           user.name,
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: textColor),
                         ),
                         subtitle: Text(
                           'Age: ${user.age} | Weight: ${user.weight}kg',
-                          style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                          style: TextStyle(fontSize: 14, color: subtitleColor),
                         ),
                         trailing: IconButton(
                           icon: Icon(Icons.delete, color: Colors.red[700]),
-                          onPressed: () => _confirmDeleteUser(context, user.id),
+                          onPressed: () => _confirmDeleteUser(context, user.id, isDarkMode),
                         ),
                         onTap: () {
                           Navigator.push(
@@ -114,14 +137,23 @@ class UserManagementScreen extends StatelessWidget {
     );
   }
 
-  void _confirmDeleteUser(BuildContext context, String userId) {
+  void _confirmDeleteUser(BuildContext context, String userId, bool isDarkMode) {
+    final textColor = isDarkMode ? Colors.white : Colors.black;
+
     showDialog(
       context: context,
       builder: (context) => ZoomIn(
         duration: Duration(milliseconds: 300),
         child: AlertDialog(
-          title: Text("Delete User"),
-          content: Text("Are you sure you want to delete this user?"),
+          backgroundColor: isDarkMode ? Colors.grey[900] : Colors.white,
+          title: Text(
+            "Delete User",
+            style: TextStyle(color: textColor),
+          ),
+          content: Text(
+            "Are you sure you want to delete this user?",
+            style: TextStyle(color: textColor),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),

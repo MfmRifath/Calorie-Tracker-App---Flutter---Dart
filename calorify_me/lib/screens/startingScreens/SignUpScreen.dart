@@ -4,11 +4,11 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animate_do/animate_do.dart';
-
 import '../../modals/Users.dart';
 import '../../modals/Water.dart';
 import '../../sevices/AuthService.dart';
 import '../../sevices/UserProvider.dart';
+import '../../sevices/ThameProvider.dart'; // Import ThemeProvider
 
 class UserSignUpScreen extends StatefulWidget {
   const UserSignUpScreen({super.key});
@@ -26,7 +26,6 @@ class _UserSignUpScreenState extends State<UserSignUpScreen> {
   final TextEditingController heightController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   File? _profileImage;
-
   final ImagePicker _picker = ImagePicker();
 
   Future<void> _pickImage() async {
@@ -40,46 +39,29 @@ class _UserSignUpScreenState extends State<UserSignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.isDarkMode;
+
     return Scaffold(
       appBar: AppBar(
         title: FadeInDown(
           duration: Duration(milliseconds: 800),
           child: Text(
             'Create Account',
-            style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.bold),
+            style: GoogleFonts.poppins(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: isDarkMode ? Colors.greenAccent : Colors.white,
+            ),
           ),
         ),
-        backgroundColor: Colors.teal[700],
+        backgroundColor: isDarkMode ? Colors.black : Colors.teal[700],
         centerTitle: true,
         elevation: 0,
       ),
       body: Stack(
         children: [
-          // Background Decoration
-          Positioned(
-            top: -50,
-            left: -100,
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                color: Colors.teal.withOpacity(0.3),
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: -50,
-            right: -100,
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.3),
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
+          _buildBackgroundCircles(),
           SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -98,16 +80,20 @@ class _UserSignUpScreenState extends State<UserSignUpScreen> {
                             backgroundImage: _profileImage != null
                                 ? FileImage(_profileImage!)
                                 : AssetImage('assets/profile_placeholder.png') as ImageProvider,
-                            backgroundColor: Colors.grey[300],
+                            backgroundColor: isDarkMode ? Colors.grey[800] : Colors.grey[300],
                             child: _profileImage == null
-                                ? Icon(Icons.camera_alt, color: Colors.grey[800], size: 30)
+                                ? Icon(
+                              Icons.camera_alt,
+                              color: isDarkMode ? Colors.grey[400] : Colors.grey[800],
+                              size: 30,
+                            )
                                 : null,
                           ),
                         ),
                       ),
                     ),
                     SizedBox(height: 20),
-                    _buildSectionTitle('Personal Information'),
+                    _buildSectionTitle('Personal Information', isDarkMode),
                     _buildTextFormField(
                       controller: nameController,
                       labelText: 'Full Name',
@@ -151,7 +137,7 @@ class _UserSignUpScreenState extends State<UserSignUpScreen> {
                       },
                     ),
                     SizedBox(height: 20),
-                    _buildSectionTitle('Account Details'),
+                    _buildSectionTitle('Account Details', isDarkMode),
                     _buildTextFormField(
                       controller: emailController,
                       labelText: 'Email Address',
@@ -185,7 +171,7 @@ class _UserSignUpScreenState extends State<UserSignUpScreen> {
                             }
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.teal[700],
+                            backgroundColor: isDarkMode ? Colors.greenAccent[700] : Colors.teal[700],
                             padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 40.0),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12.0),
@@ -194,7 +180,10 @@ class _UserSignUpScreenState extends State<UserSignUpScreen> {
                           child: Text(
                             'Sign Up',
                             style: GoogleFonts.poppins(
-                                color: Colors.white, fontSize: 18.0, fontWeight: FontWeight.bold),
+                              color: Colors.white,
+                              fontSize: 18.0,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
@@ -209,14 +198,49 @@ class _UserSignUpScreenState extends State<UserSignUpScreen> {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
+  Widget _buildBackgroundCircles() {
+    return Stack(
+      children: [
+        Positioned(
+          top: -50,
+          left: -100,
+          child: Container(
+            width: 300,
+            height: 300,
+            decoration: BoxDecoration(
+              color: Colors.teal.withOpacity(0.3),
+              shape: BoxShape.circle,
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: -50,
+          right: -100,
+          child: Container(
+            width: 300,
+            height: 300,
+            decoration: BoxDecoration(
+              color: Colors.green.withOpacity(0.3),
+              shape: BoxShape.circle,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSectionTitle(String title, bool isDarkMode) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10.0),
       child: FadeInLeft(
         duration: Duration(milliseconds: 600),
         child: Text(
           title,
-          style: GoogleFonts.poppins(fontSize: 18.0, fontWeight: FontWeight.w600, color: Colors.teal[800]),
+          style: GoogleFonts.poppins(
+            fontSize: 18.0,
+            fontWeight: FontWeight.w600,
+            color: isDarkMode ? Colors.greenAccent : Colors.teal[800],
+          ),
         ),
       ),
     );
@@ -230,6 +254,9 @@ class _UserSignUpScreenState extends State<UserSignUpScreen> {
     bool obscureText = false,
     required String? Function(String?) validator,
   }) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.isDarkMode;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10.0),
       child: FadeInUp(
@@ -238,8 +265,11 @@ class _UserSignUpScreenState extends State<UserSignUpScreen> {
           controller: controller,
           decoration: InputDecoration(
             labelText: labelText,
-            prefixIcon: Icon(icon, color: Colors.teal[800]),
+            prefixIcon: Icon(icon, color: isDarkMode ? Colors.greenAccent : Colors.teal[800]),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.0)),
+            filled: true,
+            fillColor: isDarkMode ? Colors.grey[850] : Colors.white,
+            labelStyle: TextStyle(color: isDarkMode ? Colors.greenAccent : Colors.teal[800]),
           ),
           keyboardType: keyboardType,
           obscureText: obscureText,

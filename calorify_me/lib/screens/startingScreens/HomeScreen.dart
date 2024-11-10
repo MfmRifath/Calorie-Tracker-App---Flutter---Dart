@@ -1,8 +1,12 @@
-import 'package:animate_do/animate_do.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:animate_do/animate_do.dart';
+
 import '../../modals/Food.dart';
+import '../../sevices/ThameProvider.dart';
+
 import '../mealsDetailsScreen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -11,27 +15,28 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final Color primaryBlack = Color(0xFF121212);
-  final Color lightBlack = Color(0xFF1E1E1E);
-  final Color accentGreen = Color(0xFF00E676);
-  final Color secondaryGreen = Color(0xFF66BB6A);
-
   String searchQuery = '';
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.isDarkMode;
+    final primaryBackground = isDarkMode ? Colors.black : Colors.white;
+    final secondaryBackground = isDarkMode ? Color(0xFF1E1E1E) : Color(0xFFF5F5F5);
+    final accentColor = themeProvider.accentColor;
+
     return Scaffold(
-      backgroundColor: primaryBlack,
-      appBar: buildAppBar(),
+      backgroundColor: primaryBackground,
+      appBar: buildAppBar(isDarkMode, accentColor),
       body: Column(
         children: [
-          buildSearchBar(),
+          buildSearchBar(isDarkMode, accentColor),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance.collection('Food').snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return buildCustomLoader();
+                  return buildCustomLoader(accentColor);
                 }
                 if (snapshot.hasError) {
                   return buildErrorState("Error: ${snapshot.error}");
@@ -61,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   itemBuilder: (context, index) {
                     return FadeInUp(
                       delay: Duration(milliseconds: index * 100),
-                      child: buildRecipeCard(filteredFoodItems[index]),
+                      child: buildRecipeCard(filteredFoodItems[index], isDarkMode, accentColor),
                     );
                   },
                 );
@@ -73,9 +78,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  AppBar buildAppBar() {
+  AppBar buildAppBar(bool isDarkMode, Color accentColor) {
     return AppBar(
-      backgroundColor: lightBlack,
+      backgroundColor: isDarkMode ? Colors.black : Colors.green[700],
       elevation: 0,
       title: Row(
         children: [
@@ -83,7 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
             "Welcome Back!",
             style: GoogleFonts.poppins(
               textStyle: TextStyle(
-                color: accentGreen,
+                color: accentColor,
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
               ),
@@ -111,14 +116,14 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget buildSearchBar() {
+  Widget buildSearchBar(bool isDarkMode, Color accentColor) {
     return ZoomIn(
       duration: Duration(milliseconds: 500),
       child: Container(
         margin: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: lightBlack,
+          color: isDarkMode ? Color(0xFF1E1E1E) : Colors.white,
           borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
@@ -130,15 +135,15 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         child: Row(
           children: [
-            Icon(Icons.search, color: accentGreen, size: 24),
+            Icon(Icons.search, color: accentColor, size: 24),
             SizedBox(width: 10),
             Expanded(
               child: TextField(
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
                 decoration: InputDecoration(
                   border: InputBorder.none,
                   hintText: "Search for recipes...",
-                  hintStyle: TextStyle(color: Colors.white54),
+                  hintStyle: TextStyle(color: Colors.grey),
                 ),
                 onChanged: (value) {
                   setState(() {
@@ -162,7 +167,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget buildRecipeCard(Food food) {
+  Widget buildRecipeCard(Food food, bool isDarkMode, Color accentColor) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -218,7 +223,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       food.foodName,
                       style: GoogleFonts.poppins(
                         textStyle: TextStyle(
-                          color: accentGreen,
+                          color: accentColor,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
@@ -245,10 +250,10 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget buildCustomLoader() {
+  Widget buildCustomLoader(Color accentColor) {
     return Center(
       child: CircularProgressIndicator(
-        valueColor: AlwaysStoppedAnimation<Color>(accentGreen),
+        valueColor: AlwaysStoppedAnimation<Color>(accentColor),
       ),
     );
   }

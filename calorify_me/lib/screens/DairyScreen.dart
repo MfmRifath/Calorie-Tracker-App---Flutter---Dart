@@ -2,8 +2,10 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../sevices/FoodProvider.dart';
+import '../sevices/ThameProvider.dart';
 import '../sevices/UserProvider.dart';
 import '../sevices/WaterProvider.dart';
+
 import 'AddFoodDialog.dart';
 
 class DiaryScreen extends StatefulWidget {
@@ -12,12 +14,6 @@ class DiaryScreen extends StatefulWidget {
 }
 
 class _DiaryScreenState extends State<DiaryScreen> {
-  final Color primaryGreen = Color(0xFF1B5E20);
-  final Color lightGreen = Color(0xFFA5D6A7);
-  final Color darkGreen = Color(0xFF004D40);
-  final Color accentColor = Color(0xFF66BB6A);
-  final Color black = Colors.black;
-
   late TextEditingController caloryController;
   late TextEditingController waterController;
   late TextEditingController updateWaterController;
@@ -27,10 +23,9 @@ class _DiaryScreenState extends State<DiaryScreen> {
     super.initState();
     caloryController = TextEditingController();
     waterController = TextEditingController();
-    updateWaterController = TextEditingController(); // Ensures initialization
+    updateWaterController = TextEditingController();
     loadUserData();
   }
-
 
   Future<void> loadUserData() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
@@ -62,15 +57,20 @@ class _DiaryScreenState extends State<DiaryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.isDarkMode;
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: isDarkMode ? Colors.black : Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [darkGreen, accentColor],
+              colors: isDarkMode
+                  ? [Colors.grey[900]!, Colors.black]
+                  : [Colors.green.shade400, Colors.green.shade700],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -79,7 +79,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
         title: Text(
           "Diary",
           style: TextStyle(
-            color: Colors.white,
+            color: isDarkMode ? Colors.greenAccent : Colors.white,
             fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
@@ -94,14 +94,14 @@ class _DiaryScreenState extends State<DiaryScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                buildTargetSection(context),
-                buildSummarySection(context),
-                buildMealSection(context, "Breakfast"),
-                buildMealSection(context, "Lunch"),
-                buildMealSection(context, "Dinner"),
-                buildMealSection(context, "Snacks"),
+                buildTargetSection(context, isDarkMode),
+                buildSummarySection(context, isDarkMode),
+                buildMealSection(context, "Breakfast", isDarkMode),
+                buildMealSection(context, "Lunch", isDarkMode),
+                buildMealSection(context, "Dinner", isDarkMode),
+                buildMealSection(context, "Snacks", isDarkMode),
                 SizedBox(height: 20),
-                buildWaterSection(context),
+                buildWaterSection(context, isDarkMode),
               ],
             ),
           ),
@@ -110,29 +110,35 @@ class _DiaryScreenState extends State<DiaryScreen> {
     );
   }
 
-  Widget buildTargetSection(BuildContext context) {
+  Widget buildTargetSection(BuildContext context, bool isDarkMode) {
     return _buildAnimatedCard(
+      isDarkMode: isDarkMode,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionTitle('Set Daily Targets'),
+          _sectionTitle('Set Daily Targets', isDarkMode),
           SizedBox(height: 10),
           _customTextField(
             controller: caloryController,
             label: "Target Daily Calories (Cal)",
+            isDarkMode: isDarkMode,
           ),
           SizedBox(height: 10),
           _customTextField(
             controller: waterController,
             label: "Target Daily Water Intake (ml)",
+            isDarkMode: isDarkMode,
           ),
           SizedBox(height: 20),
           ElevatedButton(
             onPressed: () {
-              final userProvider = Provider.of<UserProvider>(context, listen: false);
-              final waterProvider = Provider.of<WaterProvider>(context, listen: false);
+              final userProvider =
+              Provider.of<UserProvider>(context, listen: false);
+              final waterProvider =
+              Provider.of<WaterProvider>(context, listen: false);
               final newCalories = int.tryParse(caloryController.text) ?? 2000;
-              final newWaterIntake = double.tryParse(waterController.text) ?? 2000;
+              final newWaterIntake =
+                  double.tryParse(waterController.text) ?? 2000;
 
               userProvider.setTargetCalories(newCalories);
               waterProvider.setTargetWaterConsumption(newWaterIntake);
@@ -142,12 +148,14 @@ class _DiaryScreenState extends State<DiaryScreen> {
               );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: accentColor,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              backgroundColor: Colors.greenAccent,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
             child: Text(
               "Update Targets",
-              style: TextStyle(fontSize: 16, color: Colors.black),
+              style: TextStyle(
+                  fontSize: 16, color: isDarkMode ? Colors.black : Colors.white),
             ),
           ),
         ],
@@ -155,23 +163,27 @@ class _DiaryScreenState extends State<DiaryScreen> {
     );
   }
 
-  Widget buildSummarySection(BuildContext context) {
+  Widget buildSummarySection(BuildContext context, bool isDarkMode) {
     return Consumer2<FoodProvider, UserProvider>(
       builder: (context, foodProvider, userProvider, child) {
-        final totalWater = userProvider.user?.waterLog.currentWaterConsumption ?? 0;
+        final totalWater =
+            userProvider.user?.waterLog.currentWaterConsumption ?? 0;
         final totalCalories = foodProvider.getTotalCalories();
 
         return _buildAnimatedCard(
+          isDarkMode: isDarkMode,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _sectionTitle('Summary'),
+              _sectionTitle('Summary', isDarkMode),
               SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  buildCalorieInfo("Calories Consumed", "$totalCalories Cal", accentColor),
-                  buildCalorieInfo("Water Intake", "${totalWater.toStringAsFixed(1)} ml", primaryGreen),
+                  buildCalorieInfo(
+                      "Calories Consumed", "$totalCalories Cal", Colors.green),
+                  buildCalorieInfo("Water Intake",
+                      "${totalWater.toStringAsFixed(1)} ml", Colors.blue),
                 ],
               ),
             ],
@@ -181,23 +193,30 @@ class _DiaryScreenState extends State<DiaryScreen> {
     );
   }
 
-  Widget buildMealSection(BuildContext context, String mealType) {
+  Widget buildMealSection(
+      BuildContext context, String mealType, bool isDarkMode) {
     return Consumer<FoodProvider>(
       builder: (context, foodProvider, child) {
         final mealCalories = foodProvider.getMealCalories(mealType);
 
         return _buildAnimatedCard(
+          isDarkMode: isDarkMode,
           child: ListTile(
             title: Text(
               mealType,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: accentColor),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.greenAccent,
+              ),
             ),
             subtitle: Text(
               "Calories: $mealCalories Cal",
-              style: TextStyle(color: Colors.white70),
+              style: TextStyle(
+                  color: isDarkMode ? Colors.white70 : Colors.black54),
             ),
             trailing: IconButton(
-              icon: Icon(Icons.add_circle, color: accentColor),
+              icon: Icon(Icons.add_circle, color: Colors.greenAccent),
               onPressed: () => showDialog(
                 context: context,
                 builder: (context) => AddFoodDialog(mealType: mealType),
@@ -209,46 +228,53 @@ class _DiaryScreenState extends State<DiaryScreen> {
     );
   }
 
-  Widget buildWaterSection(BuildContext context) {
+  Widget buildWaterSection(BuildContext context, bool isDarkMode) {
     return Consumer<WaterProvider>(
       builder: (context, waterProvider, child) {
         final targetWater = waterProvider.waterLog.targetWaterConsumption;
         final waterIntake = waterProvider.waterLog.currentWaterConsumption;
 
         return _buildAnimatedCard(
+          isDarkMode: isDarkMode,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _sectionTitle('Water Intake'),
+              _sectionTitle('Water Intake', isDarkMode),
               SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     "Remaining",
-                    style: TextStyle(color: Colors.white70, fontSize: 16),
+                    style: TextStyle(
+                        color:
+                        isDarkMode ? Colors.white70 : Colors.grey.shade700,
+                        fontSize: 16),
                   ),
                   Text(
                     "${(targetWater - waterIntake).toStringAsFixed(1)} ml",
-                    style: TextStyle(fontSize: 18, color: accentColor),
+                    style: TextStyle(fontSize: 18, color: Colors.greenAccent),
                   ),
                 ],
               ),
               SizedBox(height: 10),
               LinearProgressIndicator(
                 value: (waterIntake / targetWater).clamp(0.0, 1.0),
-                color: accentColor,
-                backgroundColor: Colors.grey[800],
+                color: Colors.greenAccent,
+                backgroundColor:
+                isDarkMode ? Colors.grey.shade800 : Colors.grey.shade300,
               ),
               SizedBox(height: 10),
               _customTextField(
                 controller: updateWaterController,
                 label: "Add Water Intake (ml)",
+                isDarkMode: isDarkMode,
               ),
               SizedBox(height: 10),
               ElevatedButton(
                 onPressed: () {
-                  final addedWater = double.tryParse(updateWaterController.text) ?? 0.0;
+                  final addedWater =
+                      double.tryParse(updateWaterController.text) ?? 0.0;
                   if (addedWater > 0) {
                     waterProvider.logWater(addedWater);
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -258,13 +284,14 @@ class _DiaryScreenState extends State<DiaryScreen> {
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryGreen,
+                  backgroundColor: Colors.greenAccent,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
                 ),
                 child: Text(
                   "Update Water Intake",
-                  style: TextStyle(color: Colors.white),
+                  style: TextStyle(
+                      color: isDarkMode ? Colors.black : Colors.white),
                 ),
               ),
             ],
@@ -274,18 +301,18 @@ class _DiaryScreenState extends State<DiaryScreen> {
     );
   }
 
-  Widget _buildAnimatedCard({required Widget child}) {
+  Widget _buildAnimatedCard({required Widget child, required bool isDarkMode}) {
     return FadeIn(
       duration: Duration(milliseconds: 500),
-      child: _buildCard(child: child),
+      child: _buildCard(child: child, isDarkMode: isDarkMode),
     );
   }
 
-  Widget _buildCard({required Widget child}) {
+  Widget _buildCard({required Widget child, required bool isDarkMode}) {
     return Card(
       margin: EdgeInsets.symmetric(vertical: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      color: Colors.grey[900],
+      color: isDarkMode ? Colors.grey.shade900 : Colors.grey.shade300,
       elevation: 6,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -294,23 +321,32 @@ class _DiaryScreenState extends State<DiaryScreen> {
     );
   }
 
-  Widget _sectionTitle(String title) {
+  Widget _sectionTitle(String title, bool isDarkMode) {
     return Text(
       title,
-      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.greenAccent),
+      style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: isDarkMode ? Colors.greenAccent : Colors.green.shade900),
     );
   }
 
-  Widget _customTextField({required TextEditingController controller, required String label}) {
+  Widget _customTextField(
+      {required TextEditingController controller,
+        required String label,
+        required bool isDarkMode}) {
     return TextField(
       controller: controller,
       keyboardType: TextInputType.number,
-      style: TextStyle(color: Colors.white),
+      style: TextStyle(
+          color: isDarkMode ? Colors.greenAccent : Colors.green.shade900),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: Colors.white70),
+        labelStyle: TextStyle(
+            color: isDarkMode ? Colors.white70 : Colors.black54),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.greenAccent)),
+        focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.greenAccent)),
       ),
     );
   }
@@ -319,17 +355,14 @@ class _DiaryScreenState extends State<DiaryScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontSize: 16, color: Colors.white70)),
+        Text(label,
+            style: TextStyle(
+                fontSize: 16, color: color.withOpacity(0.7))),
         SizedBox(height: 4),
-        Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color)),
+        Text(value,
+            style: TextStyle(
+                fontSize: 18, fontWeight: FontWeight.bold, color: color)),
       ],
-    );
-  }
-
-  void _showAddFoodDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AddFoodDialog(mealType: "General"),
     );
   }
 }

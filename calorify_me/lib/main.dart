@@ -5,6 +5,7 @@ import 'package:calorify_me/screens/startingScreens/OnboardingScreen.dart';
 import 'package:calorify_me/screens/startingScreens/SignUpScreen.dart';
 import 'package:calorify_me/sevices/AuthService.dart';
 import 'package:calorify_me/sevices/FoodProvider.dart';
+import 'package:calorify_me/sevices/ThameProvider.dart';
 import 'package:calorify_me/sevices/UserProvider.dart';
 import 'package:calorify_me/sevices/WaterProvider.dart';
 
@@ -51,22 +52,21 @@ class CalorieTrackerApp extends StatelessWidget {
               targetWaterConsumption: 2000,
             ),
         ),
+        ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()), // ThemeProvider
+
       ],
-      child: MaterialApp(
-        title: 'Calorie Tracker',
-        theme: ThemeData(
-          primarySwatch: Colors.green,
-          hintColor: Colors.lightGreen,
-          visualDensity: VisualDensity.adaptivePlatformDensity,
-          textTheme: TextTheme(
-            bodyLarge: TextStyle(fontSize: 16, color: Colors.black),
-          ),
-        ),
-        home: SplashScreen(), // Start with SplashScreen
-        routes: {
-          '/login': (context) => LoginScreen(),
-          '/recipeScreen': (context) => MainScreen(),
-          '/signUp': (context) => UserSignUpScreen(),
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return MaterialApp(
+            title: 'Calorie Tracker',
+            theme: themeProvider.getTheme(),
+            home: SplashScreen(),
+            routes: {
+              '/login': (context) => LoginScreen(),
+              '/recipeScreen': (context) => MainScreen(),
+              '/signUp': (context) => UserSignUpScreen(),
+            },
+          );
         },
       ),
     );
