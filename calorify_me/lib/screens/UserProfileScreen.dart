@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:animate_do/animate_do.dart';
 import '../modals/Food.dart';
  // Import ThemeProvider
+import '../modals/Users.dart';
 import '../sevices/ThameProvider.dart';
 import '../sevices/UserProvider.dart';
 import 'EditProfileScreen.dart';
@@ -114,7 +115,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
-  Widget _buildProfileHeader(user, ThemeData theme) {
+  Widget _buildProfileHeader(CustomUser user, ThemeData theme) {
     return FadeInDown(
       duration: Duration(milliseconds: 800),
       child: Container(
@@ -136,7 +137,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               onTap: () {},
               child: CircleAvatar(
                 radius: 50,
-                backgroundImage: AssetImage('assets/profile_placeholder.png'),
+                backgroundImage: user.profileImageUrl == null ? AssetImage('assets/profile_placeholder.png'): NetworkImage(user.profileImageUrl!),
                 backgroundColor: theme.hintColor,
               ),
             ),

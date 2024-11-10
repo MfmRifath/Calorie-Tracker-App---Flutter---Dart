@@ -45,6 +45,7 @@ dependencies:
   google_fonts: ^6.2.1
   flutter_plugin_android_lifecycle: ^2.0.23
   animate_do: ^3.3.4
+  shimmer: ^3.0.0
 
 
 dev_dependencies:

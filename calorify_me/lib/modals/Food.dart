@@ -1,4 +1,5 @@
 class Food {
+  String? id;
   String foodName;
   int calories;
   double protein;
@@ -12,7 +13,8 @@ class Food {
     required this.protein,
     required this.fat,
     required this.foodWeight,
-    this.imageUrl, // Initialize the image URL
+    this.imageUrl,
+    this.id// Initialize the image URL
   });
 
 
@@ -28,14 +30,15 @@ class Food {
     };
   }
 
-  static Food fromMap(Map<String, dynamic> map) {
+  static Food fromMap(Map<String, dynamic> map, String id) {
     return Food(
       foodName: map['foodName'],
       calories: map['calories'],
       protein: map['protein'],
       fat: map['fat'],
       foodWeight: map['foodWeight'],
-      imageUrl: map['imageUrl'], // Retrieve the image URL from Firestore
+      imageUrl: map['imageUrl'],
+      id:map['id'] // Retrieve the image URL from Firestore
     );
   }
 }

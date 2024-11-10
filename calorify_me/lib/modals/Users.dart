@@ -95,7 +95,7 @@ class CustomUser {
       profileImageUrl: data['profileImageUrl'],
       email: data['email']?? ''
     )
-      ..foodLog = foodSnapshot.docs.map((doc) => Food.fromMap(doc.data())).toList()
+      ..foodLog = foodSnapshot.docs.map((doc) => Food.fromMap(doc.data(),doc.id)).toList()
       ..consumedFoodLog =
       consumedFoodSnapshot.docs.map((doc) => ConsumedFood.fromMap(doc.data())).toList();
   }

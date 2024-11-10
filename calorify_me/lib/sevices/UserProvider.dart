@@ -73,7 +73,7 @@ class UserProvider with ChangeNotifier {
           .get();
 
       _foodLog = foodLogSnapshot.docs
-          .map((doc) => Food.fromMap(doc.data() as Map<String, dynamic>))
+          .map((doc) => Food.fromMap(doc.data() as Map<String, dynamic>, doc.id))
           .toList();
 
       notifyListeners();

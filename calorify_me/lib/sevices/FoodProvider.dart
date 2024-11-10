@@ -116,7 +116,7 @@ class FoodProvider with ChangeNotifier {
           .get();
 
       _foodLog = snapshot.docs
-          .map((doc) => Food.fromMap(doc.data() as Map<String, dynamic>))
+          .map((doc) => Food.fromMap(doc.data() as Map<String, dynamic>, doc.id))
           .toList();
 
       _setError(null);

@@ -65,7 +65,7 @@ class FoodManagementScreen extends StatelessWidget {
           }
 
           List<Food> foodItems = snapshot.data!.docs.map((doc) {
-            return Food.fromMap(doc.data() as Map<String, dynamic>);
+            return Food.fromMap(doc.data() as Map<String, dynamic>, doc.id);
           }).toList();
 
           return ListView.builder(
