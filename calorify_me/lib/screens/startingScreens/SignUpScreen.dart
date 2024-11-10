@@ -141,6 +141,7 @@ class UserSignUpScreen extends StatelessWidget {
       if (firebaseUser != null) {
         CustomUser newUser = CustomUser(
           id: firebaseUser.uid,
+          email: email,
           name: name,
           age: age,
           weight: weight,

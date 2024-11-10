@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../AdminScreen.dart';
+
 import '../DairyScreen.dart';
 import '../ReportScreen.dart';
-import 'HomeScreen.dart';
+
+import '../UserProfileScreen.dart';
+import 'HomeScreen.dart'; // Import the new screen
 
 class MainScreen extends StatefulWidget {
   @override
@@ -13,12 +16,12 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
-  // List of screens for each bottom navigation item
   final List<Widget> _screens = [
     HomeScreen(),
     DiaryScreen(),
     ReportsScreen(),
     AdminScreen(),
+    UserProfileScreen(), // Add this screen
   ];
 
   @override
@@ -29,7 +32,7 @@ class _MainScreenState extends State<MainScreen> {
         transitionBuilder: (child, animation) {
           return FadeTransition(opacity: animation, child: child);
         },
-        child: _screens[_currentIndex], // Display selected screen
+        child: _screens[_currentIndex],
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
@@ -54,8 +57,8 @@ class _MainScreenState extends State<MainScreen> {
           unselectedItemColor: Colors.white70,
           showUnselectedLabels: true,
           type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.transparent, // Transparent to show custom container color
-          elevation: 0, // Remove default shadow
+          backgroundColor: Colors.transparent,
+          elevation: 0,
           items: [
             BottomNavigationBarItem(
               icon: Icon(Icons.book),
@@ -72,6 +75,10 @@ class _MainScreenState extends State<MainScreen> {
             BottomNavigationBarItem(
               icon: Icon(Icons.admin_panel_settings),
               label: 'Admin',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person),
+              label: 'Profile', // Profile tab
             ),
           ],
           selectedLabelStyle: GoogleFonts.poppins(

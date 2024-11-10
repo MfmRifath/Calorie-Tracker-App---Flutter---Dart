@@ -8,6 +8,7 @@ class CustomUser {
   String id; // Unique identifier (e.g., Firebase User ID)
   String name;
   int age;
+  String email;
   double weight;
   double height;
   List<Food>? foodLog;
@@ -15,6 +16,7 @@ class CustomUser {
   late BMI bmi;
   double totalCalories;
   double totalWaterIntake;
+  String? profileImageUrl;
   int targetCalories;
 
   List<ConsumedFood>? consumedFoodLog = [];
@@ -26,6 +28,8 @@ class CustomUser {
     required this.weight,
     required this.height,
     required this.waterLog,
+    required this.email,
+    this.profileImageUrl,
     this.totalCalories = 0,
     this.totalWaterIntake = 0,
     this.targetCalories = 2000,
@@ -62,6 +66,8 @@ class CustomUser {
       'totalCalories': totalCalories,
       'totalWaterIntake': totalWaterIntake,
       'targetCalories': targetCalories,
+      'profileImageUrl':profileImageUrl,
+      'email':email
     };
   }
 
@@ -86,6 +92,8 @@ class CustomUser {
       height: (data['height'] ?? 0.0).toDouble(),
       waterLog: Water.fromMap(data['waterLog'] ?? {}),
       targetCalories: data['targetCalories'] ?? 2000,
+      profileImageUrl: data['profileImageUrl'],
+      email: data['email']?? ''
     )
       ..foodLog = foodSnapshot.docs.map((doc) => Food.fromMap(doc.data())).toList()
       ..consumedFoodLog =
