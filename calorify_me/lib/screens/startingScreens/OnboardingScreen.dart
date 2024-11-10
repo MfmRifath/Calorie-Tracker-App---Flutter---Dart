@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:animate_do/animate_do.dart';
 
 import 'SignScreen.dart';
 import 'StartingScreen.dart';
@@ -44,7 +45,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 currentPage = index;
               });
             },
-            itemBuilder: (context, index) => _pages[index],
+            itemBuilder: (context, index) => ZoomIn(
+              duration: Duration(milliseconds: 800),
+              child: _pages[index],
+            ),
           ),
           Positioned(
             bottom: 30,
@@ -55,17 +59,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               children: [
                 currentPage == 0
                     ? SizedBox.shrink()
-                    : IconButton(
-                  onPressed: () {
-                    _pageController.previousPage(
-                      duration: Duration(milliseconds: 500),
-                      curve: Curves.easeInOut,
-                    );
-                  },
-                  icon: Icon(
-                    CupertinoIcons.back,
-                    color: Colors.black87,
-                    size: 28.0,
+                    : FadeInLeft(
+                  duration: Duration(milliseconds: 800),
+                  child: IconButton(
+                    onPressed: () {
+                      _pageController.previousPage(
+                        duration: Duration(milliseconds: 500),
+                        curve: Curves.easeInOut,
+                      );
+                    },
+                    icon: Icon(
+                      CupertinoIcons.back,
+                      color: Colors.black87,
+                      size: 28.0,
+                    ),
                   ),
                 ),
                 Row(
@@ -89,45 +96,51 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                 ),
                 currentPage == _pages.length - 1
-                    ? ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => SignScreen(),
+                    ? FadeInRight(
+                  duration: Duration(milliseconds: 800),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SignScreen(),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green[800],
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.0),
                       ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green[800],
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.0),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 20.0,
+                        vertical: 14.0,
+                      ),
                     ),
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 20.0,
-                      vertical: 14.0,
-                    ),
-                  ),
-                  child: Text(
-                    "Finish",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18.0,
-                      fontWeight: FontWeight.bold,
+                    child: Text(
+                      "Finish",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18.0,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 )
-                    : IconButton(
-                  onPressed: () {
-                    _pageController.nextPage(
-                      duration: Duration(milliseconds: 500),
-                      curve: Curves.easeInOut,
-                    );
-                  },
-                  icon: Icon(
-                    CupertinoIcons.forward,
-                    color: Colors.black87,
-                    size: 28.0,
+                    : FadeInRight(
+                  duration: Duration(milliseconds: 800),
+                  child: IconButton(
+                    onPressed: () {
+                      _pageController.nextPage(
+                        duration: Duration(milliseconds: 500),
+                        curve: Curves.easeInOut,
+                      );
+                    },
+                    icon: Icon(
+                      CupertinoIcons.forward,
+                      color: Colors.black87,
+                      size: 28.0,
+                    ),
                   ),
                 ),
               ],

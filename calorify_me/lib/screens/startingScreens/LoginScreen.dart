@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:animate_do/animate_do.dart';
 import '../../sevices/UserProvider.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -13,16 +14,20 @@ class LoginScreen extends StatelessWidget {
     final TextEditingController passwordController = TextEditingController();
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        elevation: 4,
-        title: Text(
-          'Login',
-          style: GoogleFonts.poppins(
-            textStyle: TextStyle(
-              color: Colors.greenAccent,
-              fontWeight: FontWeight.bold,
-              fontSize: 24.0,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: FadeInDown(
+          duration: Duration(milliseconds: 800),
+          child: Text(
+            'Login',
+            style: GoogleFonts.poppins(
+              textStyle: TextStyle(
+                color: Colors.greenAccent,
+                fontWeight: FontWeight.bold,
+                fontSize: 24.0,
+              ),
             ),
           ),
         ),
@@ -31,88 +36,136 @@ class LoginScreen extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xff3A3A3A), Color(0xff1F1F1F)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: EdgeInsets.all(20.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    SizedBox(height: 30.0),
-                    // Email Text Field
-                    _buildTextField(
-                      controller: emailController,
-                      hintText: 'Enter your email',
-                      labelText: 'Email',
-                      icon: CupertinoIcons.mail,
-                      obscureText: false,
-                    ),
-                    SizedBox(height: 20.0),
-                    // Password Text Field
-                    _buildTextField(
-                      controller: passwordController,
-                      hintText: 'Enter your password',
-                      labelText: 'Password',
-                      icon: CupertinoIcons.lock,
-                      obscureText: true,
-                    ),
-                    SizedBox(height: 30.0),
-                    // Login Button with Animation
-                    AnimatedButton(
-                      onPressed: () async {
-                        String email = emailController.text.trim();
-                        String password = passwordController.text.trim();
-
-                        if (email.isEmpty || password.isEmpty) {
-                          _showSnackBar(
-                              context, 'Please fill in all fields.', Colors.orangeAccent);
-                          return;
-                        }
-
-                        bool loginSuccess = await Provider.of<UserProvider>(context, listen: false)
-                            .login(email, password);
-
-                        if (loginSuccess) {
-                          Navigator.pushReplacementNamed(context, '/recipeScreen');
-                        } else {
-                          _showSnackBar(
-                              context, 'Login failed. Invalid credentials.', Colors.redAccent);
-                        }
-                      },
-                      buttonText: 'Log in',
-                    ),
-                    // Forget Password Link
-                    TextButton(
-                      onPressed: () {
-                        // Navigate to Forgot Password Screen
-                      },
-                      child: Text(
-                        'Forgot Password?',
-                        style: GoogleFonts.poppins(
-                          textStyle: TextStyle(
-                            color: Colors.greenAccent,
-                            fontSize: 14.0,
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+      body: Stack(
+        children: [
+          // Background Layer
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xff232526), Color(0xff414345)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
                 ),
               ),
             ),
           ),
-        ),
+          // Top Circular Decoration
+          Positioned(
+            top: -60,
+            left: -30,
+            child: Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.greenAccent.withOpacity(0.15),
+              ),
+            ),
+          ),
+          // Bottom Circular Decoration
+          Positioned(
+            bottom: -50,
+            right: -40,
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.greenAccent.withOpacity(0.1),
+              ),
+            ),
+          ),
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Lock Icon with BounceIn Animation
+                      BounceInDown(
+                        duration: Duration(milliseconds: 1000),
+                        child: Icon(
+                          CupertinoIcons.lock_shield_fill,
+                          size: 90,
+                          color: Colors.greenAccent,
+                        ),
+                      ),
+                      SizedBox(height: 30.0),
+                      // Email Text Field
+                      _buildTextField(
+                        controller: emailController,
+                        hintText: 'Enter your email',
+                        labelText: 'Email',
+                        icon: CupertinoIcons.mail,
+                        obscureText: false,
+                      ),
+                      SizedBox(height: 20.0),
+                      // Password Text Field
+                      _buildTextField(
+                        controller: passwordController,
+                        hintText: 'Enter your password',
+                        labelText: 'Password',
+                        icon: CupertinoIcons.lock,
+                        obscureText: true,
+                      ),
+                      SizedBox(height: 30.0),
+                      // Animated Login Button
+                      BounceInUp(
+                        duration: Duration(milliseconds: 1200),
+                        child: AnimatedButton(
+                          onPressed: () async {
+                            String email = emailController.text.trim();
+                            String password = passwordController.text.trim();
+
+                            if (email.isEmpty || password.isEmpty) {
+                              _showSnackBar(
+                                  context, 'Please fill in all fields.', Colors.orangeAccent);
+                              return;
+                            }
+
+                            bool loginSuccess = await Provider.of<UserProvider>(context, listen: false)
+                                .login(email, password);
+
+                            if (loginSuccess) {
+                              Navigator.pushReplacementNamed(context, '/recipeScreen');
+                            } else {
+                              _showSnackBar(
+                                  context, 'Login failed. Invalid credentials.', Colors.redAccent);
+                            }
+                          },
+                          buttonText: 'Log in',
+                        ),
+                      ),
+                      SizedBox(height: 10.0),
+                      FadeInUp(
+                        duration: Duration(milliseconds: 1400),
+                        child: TextButton(
+                          onPressed: () {
+                            // Navigate to Forgot Password Screen
+                          },
+                          child: Text(
+                            'Forgot Password?',
+                            style: GoogleFonts.poppins(
+                              textStyle: TextStyle(
+                                color: Colors.greenAccent,
+                                fontSize: 14.0,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -124,31 +177,34 @@ class LoginScreen extends StatelessWidget {
     required IconData icon,
     required bool obscureText,
   }) {
-    return TextField(
-      controller: controller,
-      obscureText: obscureText,
-      style: TextStyle(color: Colors.white),
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: Colors.black87,
-        hintText: hintText,
-        hintStyle: GoogleFonts.poppins(
-          textStyle: TextStyle(color: Colors.white54),
+    return FadeInUp(
+      duration: Duration(milliseconds: 800),
+      child: TextField(
+        controller: controller,
+        obscureText: obscureText,
+        style: TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          filled: true,
+          fillColor: Colors.black87,
+          hintText: hintText,
+          hintStyle: GoogleFonts.poppins(
+            textStyle: TextStyle(color: Colors.white54),
+          ),
+          labelText: labelText,
+          labelStyle: GoogleFonts.poppins(
+            textStyle: TextStyle(color: Colors.greenAccent),
+          ),
+          prefixIcon: Icon(icon, color: Colors.greenAccent),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14.0),
+            borderSide: BorderSide(color: Colors.greenAccent, width: 1.5),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14.0),
+            borderSide: BorderSide(color: Colors.greenAccent, width: 2.0),
+          ),
+          contentPadding: EdgeInsets.symmetric(horizontal: 18.0, vertical: 14.0),
         ),
-        labelText: labelText,
-        labelStyle: GoogleFonts.poppins(
-          textStyle: TextStyle(color: Colors.greenAccent),
-        ),
-        prefixIcon: Icon(icon, color: Colors.greenAccent),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14.0),
-          borderSide: BorderSide(color: Colors.greenAccent, width: 1.5),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14.0),
-          borderSide: BorderSide(color: Colors.greenAccent, width: 2.0),
-        ),
-        contentPadding: EdgeInsets.symmetric(horizontal: 18.0, vertical: 14.0),
       ),
     );
   }
@@ -184,8 +240,8 @@ class AnimatedButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(12.0),
         ),
         padding: EdgeInsets.symmetric(vertical: 16.0),
-        elevation: 8,
-        shadowColor: Colors.green[800],
+        elevation: 10,
+        shadowColor: Colors.greenAccent.withOpacity(0.5),
       ),
       child: Text(
         buttonText,

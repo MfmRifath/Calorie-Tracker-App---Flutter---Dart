@@ -1,3 +1,4 @@
+import 'package:calorify_me/screens/SplashScreen.dart';
 import 'package:calorify_me/screens/startingScreens/LoginScreen.dart';
 import 'package:calorify_me/screens/startingScreens/MainScreen.dart';
 import 'package:calorify_me/screens/startingScreens/OnboardingScreen.dart';
@@ -61,7 +62,7 @@ class CalorieTrackerApp extends StatelessWidget {
             bodyLarge: TextStyle(fontSize: 16, color: Colors.black),
           ),
         ),
-        home: AuthWrapper(),
+        home: SplashScreen(), // Start with SplashScreen
         routes: {
           '/login': (context) => LoginScreen(),
           '/recipeScreen': (context) => MainScreen(),
