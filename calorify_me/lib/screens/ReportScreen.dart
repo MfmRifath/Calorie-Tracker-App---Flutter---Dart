@@ -4,49 +4,44 @@ import 'package:provider/provider.dart';
 import 'dart:math';
 import 'package:animate_do/animate_do.dart';
 import '../sevices/FoodProvider.dart';
+import '../sevices/UserProvider.dart';
 
 class ReportsScreen extends StatelessWidget {
-  final Color primaryGreen = Color(0xFF4CAF50);
-  final Color lightGreen = Color(0xFFE8F5E9);
-  final Color darkGreen = Color(0xFF388E3C);
-  final Color orangeAccent = Color(0xFFFFA726);
-  final Color blueAccent = Color(0xFF42A5F5);
+  final Color primaryGreen = Color(0xFF1B5E20);
+  final Color lightGreen = Color(0xFF66BB6A);
+  final Color darkGreen = Color(0xFF004D40);
+  final Color accentGreen = Color(0xFF81C784);
+  final Color black = Colors.black;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        backgroundColor: black,
+        elevation: 4,
         title: FadeIn(
           duration: Duration(milliseconds: 800),
           child: Text(
             "Monthly Report",
             style: TextStyle(
-              color: darkGreen,
+              color: lightGreen,
               fontSize: 24,
               fontWeight: FontWeight.bold,
             ),
           ),
         ),
         centerTitle: true,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [lightGreen, primaryGreen],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
-        ),
       ),
+      backgroundColor: black,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
-          child: Consumer<FoodProvider>(
-            builder: (context, foodProvider, child) {
-              if (foodProvider.isLoading) {
-                return Center(child: CircularProgressIndicator());
+          child: Consumer2<FoodProvider, UserProvider>(
+            builder: (context, foodProvider, userProvider, child) {
+              if (foodProvider.isLoading || userProvider.user == null) {
+                return Center(
+                  child: CircularProgressIndicator(color: lightGreen),
+                );
               }
               if (foodProvider.dailyFoodLog.isEmpty) {
                 return Center(
@@ -54,7 +49,7 @@ class ReportsScreen extends StatelessWidget {
                     "No data available for this month.",
                     style: TextStyle(
                       fontSize: 18,
-                      color: darkGreen,
+                      color: lightGreen,
                     ),
                   ),
                 );
@@ -80,7 +75,7 @@ class ReportsScreen extends StatelessWidget {
                   SizedBox(height: 30),
                   FadeInUp(
                     duration: Duration(milliseconds: 700),
-                    child: buildHydrationProgress(foodProvider),
+                    child: buildHydrationProgress(userProvider),
                   ),
                   SizedBox(height: 30),
                   ZoomIn(
@@ -106,14 +101,14 @@ class ReportsScreen extends StatelessWidget {
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [lightGreen, Colors.white],
+          colors: [darkGreen, black],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withOpacity(0.2),
             spreadRadius: 4,
             blurRadius: 10,
             offset: Offset(0, 4),
@@ -128,16 +123,16 @@ class ReportsScreen extends StatelessWidget {
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: darkGreen,
+              color: lightGreen,
             ),
           ),
           SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              buildSummaryCard("Total", "$totalCalories Cal", orangeAccent),
-              buildSummaryCard("Avg Daily", "$avgDailyCalories Cal", blueAccent),
-              buildSummaryCard("Highest", "$highestCalories Cal", Colors.red),
+              buildSummaryCard("Total", "$totalCalories Cal", accentGreen),
+              buildSummaryCard("Avg Daily", "$avgDailyCalories Cal", lightGreen),
+              buildSummaryCard("Highest", "$highestCalories Cal", Colors.redAccent),
               buildSummaryCard("Lowest", "$lowestCalories Cal", darkGreen),
             ],
           ),
@@ -175,7 +170,7 @@ class ReportsScreen extends StatelessWidget {
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: darkGreen,
+            color: lightGreen,
           ),
         ),
         SizedBox(height: 10),
@@ -192,7 +187,7 @@ class ReportsScreen extends StatelessWidget {
                     getTitlesWidget: (value, _) {
                       return Text(
                         (value + 1).toInt().toString(),
-                        style: TextStyle(color: darkGreen, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: lightGreen, fontWeight: FontWeight.bold),
                       );
                     },
                   ),
@@ -213,11 +208,11 @@ class ReportsScreen extends StatelessWidget {
                     },
                   ),
                   isCurved: true,
-                  color: orangeAccent,
+                  color: accentGreen,
                   barWidth: 4,
                   belowBarData: BarAreaData(
                     show: true,
-                    color: orangeAccent.withOpacity(0.3),
+                    color: accentGreen.withOpacity(0.3),
                   ),
                 ),
               ],
@@ -241,7 +236,7 @@ class ReportsScreen extends StatelessWidget {
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: darkGreen,
+            color: lightGreen,
           ),
         ),
         SizedBox(height: 10),
@@ -263,7 +258,7 @@ class ReportsScreen extends StatelessWidget {
                 ),
                 PieChartSectionData(
                   value: totalProteins,
-                  color: Colors.red,
+                  color: Colors.redAccent,
                   title: "Proteins",
                   radius: 50,
                   titleStyle: TextStyle(
@@ -274,13 +269,13 @@ class ReportsScreen extends StatelessWidget {
                 ),
                 PieChartSectionData(
                   value: totalFats,
-                  color: Colors.yellow,
+                  color: Colors.yellowAccent,
                   title: "Fats",
                   radius: 50,
                   titleStyle: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: Colors.black,
                   ),
                 ),
               ],
@@ -294,8 +289,10 @@ class ReportsScreen extends StatelessWidget {
     );
   }
 
-  Widget buildHydrationProgress(FoodProvider foodProvider) {
-    final totalWater = foodProvider.dailyFoodLog.fold<double>(0.0, (sum, food) => sum + food.calories);
+  Widget buildHydrationProgress(UserProvider userProvider) {
+    final waterLog = userProvider.user?.waterLog;
+    final totalWater = waterLog?.currentWaterConsumption ?? 0.0;
+    final targetWater = waterLog?.targetWaterConsumption ?? 3000.0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -305,15 +302,20 @@ class ReportsScreen extends StatelessWidget {
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: darkGreen,
+            color: lightGreen,
           ),
         ),
         SizedBox(height: 10),
         LinearProgressIndicator(
-          value: totalWater / 3000,
-          color: Colors.blue,
-          backgroundColor: Colors.grey[300],
-        )
+          value: totalWater / targetWater,
+          color: accentGreen,
+          backgroundColor: Colors.grey[800],
+        ),
+        SizedBox(height: 5),
+        Text(
+          "${totalWater.toStringAsFixed(0)} ml / ${targetWater.toStringAsFixed(0)} ml",
+          style: TextStyle(color: lightGreen, fontSize: 16),
+        ),
       ],
     );
   }
@@ -338,7 +340,7 @@ class ReportsScreen extends StatelessWidget {
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: darkGreen,
+            color: lightGreen,
           ),
         ),
         SizedBox(height: 10),
@@ -352,7 +354,7 @@ class ReportsScreen extends StatelessWidget {
                   barRods: [
                     BarChartRodData(
                       toY: entry.value.toDouble(),
-                      color: primaryGreen,
+                      color: accentGreen,
                       width: 20,
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -371,7 +373,10 @@ class ReportsScreen extends StatelessWidget {
                       final meal = mealCounts.keys.firstWhere(
                               (key) => key.hashCode == value.toInt(),
                           orElse: () => '');
-                      return Text(meal);
+                      return Text(
+                        meal,
+                        style: TextStyle(color: lightGreen),
+                      );
                     },
                   ),
                 ),
