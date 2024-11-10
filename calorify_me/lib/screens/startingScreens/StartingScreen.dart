@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:animate_do/animate_do.dart';
 
 class StartingScreen extends StatelessWidget {
   StartingScreen({
@@ -22,47 +23,70 @@ class StartingScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SizedBox(height: 40.0), // Added space at the top
-              // Image Section
+              SizedBox(height: 20.0),
+              // Image Section with Animation
               Expanded(
-                child: Image.asset(
-                  'assets/images/$img.png',
-                  fit: BoxFit.contain,
-                  width: MediaQuery.of(context).size.width * 0.8,
-                ),
-              ),
-              // Heading Text
-              Text(
-                heading,
-                style: GoogleFonts.poppins(
-                  textStyle: TextStyle(
-                    fontSize: 26.0,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                child: ZoomIn(
+                  duration: Duration(milliseconds: 800),
+                  child: Image.asset(
+                    'assets/images/$img.png',
+                    fit: BoxFit.contain,
+                    width: MediaQuery.of(context).size.width * 0.8,
                   ),
                 ),
               ),
-              // Description Text
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 16.0),
+              // Heading Text with Animation
+              FadeInDown(
+                duration: Duration(milliseconds: 900),
                 child: Text(
-                  Description,
-                  textAlign: TextAlign.center,
+                  heading,
                   style: GoogleFonts.poppins(
                     textStyle: TextStyle(
-                      fontSize: 16.0,
-                      fontWeight: FontWeight.normal,
-                      color: Colors.grey[700],
-                      height: 1.5,
+                      fontSize: 28.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.greenAccent,
                     ),
                   ),
                 ),
               ),
-              SizedBox(height: 40.0), // Space at the bottom
+              // Description Text with Animation
+              FadeInUp(
+                duration: Duration(milliseconds: 1100),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16.0),
+                  child: Text(
+                    Description,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(
+                      textStyle: TextStyle(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.normal,
+                        color: Colors.grey[300],
+                        height: 1.5,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 20.0),
+              // Bottom Decorative Element with Bounce Animation
+              BounceInUp(
+                duration: Duration(milliseconds: 800),
+                child: Container(
+                  width: 60,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.greenAccent,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              SizedBox(height: 40.0),
             ],
           ),
         ),
       ),
+      backgroundColor: Colors.black, // Black background
     );
   }
 }

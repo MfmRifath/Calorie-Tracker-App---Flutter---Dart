@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
-
 import 'SignScreen.dart';
 import 'StartingScreen.dart';
 
@@ -37,6 +36,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return Scaffold(
       body: Stack(
         children: [
+          // Background Gradient
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF0F2027), Color(0xFF2C5364)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+          ),
           PageView.builder(
             controller: _pageController,
             itemCount: _pages.length,
@@ -50,6 +59,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: _pages[index],
             ),
           ),
+          // Navigation and Dots
           Positioned(
             bottom: 30,
             left: 20,
@@ -70,7 +80,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     },
                     icon: Icon(
                       CupertinoIcons.back,
-                      color: Colors.black87,
+                      color: Colors.white,
                       size: 28.0,
                     ),
                   ),
@@ -87,9 +97,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         shape: BoxShape.circle,
                         color: currentPage == index
                             ? Colors.greenAccent[400]
-                            : Colors.black45,
+                            : Colors.white54,
                         boxShadow: currentPage == index
-                            ? [BoxShadow(color: Colors.green, blurRadius: 6)]
+                            ? [BoxShadow(color: Colors.greenAccent, blurRadius: 6)]
                             : [],
                       ),
                     ),
@@ -108,7 +118,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green[800],
+                      backgroundColor: Colors.greenAccent[700],
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.0),
                       ),
@@ -118,9 +128,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       ),
                     ),
                     child: Text(
-                      "Finish",
+                      "Get Started",
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Colors.black,
                         fontSize: 18.0,
                         fontWeight: FontWeight.bold,
                       ),
@@ -138,7 +148,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     },
                     icon: Icon(
                       CupertinoIcons.forward,
-                      color: Colors.black87,
+                      color: Colors.white,
                       size: 28.0,
                     ),
                   ),

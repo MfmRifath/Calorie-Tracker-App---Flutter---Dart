@@ -20,14 +20,17 @@ class _DiaryScreenState extends State<DiaryScreen> {
 
   late TextEditingController caloryController;
   late TextEditingController waterController;
+  late TextEditingController updateWaterController;
 
   @override
   void initState() {
     super.initState();
     caloryController = TextEditingController();
     waterController = TextEditingController();
+    updateWaterController = TextEditingController(); // Ensures initialization
     loadUserData();
   }
+
 
   Future<void> loadUserData() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
@@ -53,6 +56,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
   void dispose() {
     caloryController.dispose();
     waterController.dispose();
+    updateWaterController.dispose();
     super.dispose();
   }
 
@@ -101,14 +105,6 @@ class _DiaryScreenState extends State<DiaryScreen> {
               ],
             ),
           ),
-        ),
-      ),
-      floatingActionButton: BounceInUp(
-        duration: Duration(milliseconds: 600),
-        child: FloatingActionButton(
-          backgroundColor: accentColor,
-          onPressed: () => _showAddFoodDialog(context),
-          child: Icon(Icons.add, color: Colors.white),
         ),
       ),
     );
@@ -243,6 +239,33 @@ class _DiaryScreenState extends State<DiaryScreen> {
                 value: (waterIntake / targetWater).clamp(0.0, 1.0),
                 color: accentColor,
                 backgroundColor: Colors.grey[800],
+              ),
+              SizedBox(height: 10),
+              _customTextField(
+                controller: updateWaterController,
+                label: "Add Water Intake (ml)",
+              ),
+              SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () {
+                  final addedWater = double.tryParse(updateWaterController.text) ?? 0.0;
+                  if (addedWater > 0) {
+                    waterProvider.logWater(addedWater);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Water intake updated!")),
+                    );
+                    updateWaterController.clear();
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryGreen,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+                child: Text(
+                  "Update Water Intake",
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ],
           ),
