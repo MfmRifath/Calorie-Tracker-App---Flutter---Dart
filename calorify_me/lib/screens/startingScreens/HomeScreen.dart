@@ -11,17 +11,17 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final Color primaryGreen = Color(0xFF4CAF50);
-  final Color lightGreen = Color(0xFFE8F5E9);
-  final Color darkGreen = Color(0xFF1B5E20);
-  final Color accentColor = Color(0xFF81C784);
+  final Color primaryBlack = Color(0xFF121212);
+  final Color lightBlack = Color(0xFF1E1E1E);
+  final Color accentGreen = Color(0xFF00E676);
+  final Color secondaryGreen = Color(0xFF66BB6A);
 
   String searchQuery = '';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: lightGreen,
+      backgroundColor: primaryBlack,
       appBar: buildAppBar(),
       body: Column(
         children: [
@@ -55,6 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisCount: 2,
                     crossAxisSpacing: 16,
                     mainAxisSpacing: 16,
+                    childAspectRatio: 0.85,
                   ),
                   itemCount: filteredFoodItems.length,
                   itemBuilder: (context, index) {
@@ -74,46 +75,37 @@ class _HomeScreenState extends State<HomeScreen> {
 
   AppBar buildAppBar() {
     return AppBar(
-      flexibleSpace: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [darkGreen, primaryGreen],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-      ),
+      backgroundColor: lightBlack,
       elevation: 0,
       title: Row(
         children: [
-          GestureDetector(
-            onTap: () {
-              // Profile action
-            },
-            child: BounceInDown(
-              child: CircleAvatar(
-                backgroundImage: AssetImage('assets/images/bg.jpg'),
-                radius: 25,
-              ),
-            ),
-          ),
-          SizedBox(width: 12),
           Text(
-            "User's Recipes",
+            "Welcome Back!",
             style: GoogleFonts.poppins(
               textStyle: TextStyle(
-                color: Colors.white,
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
+                color: accentGreen,
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
         ],
       ),
       actions: [
-        IconButton(
-          onPressed: () {},
-          icon: Icon(Icons.more_vert, color: Colors.white),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: GestureDetector(
+            onTap: () {
+              // Navigate to User Profile or Edit Profile
+            },
+            child: CircleAvatar(
+              radius: 20,
+              backgroundImage: NetworkImage(
+                'https://via.placeholder.com/150', // Replace with actual user profile URL
+              ),
+              backgroundColor: Colors.grey[300],
+            ),
+          ),
         ),
       ],
     );
@@ -124,13 +116,13 @@ class _HomeScreenState extends State<HomeScreen> {
       duration: Duration(milliseconds: 500),
       child: Container(
         margin: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: lightBlack,
           borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.3),
+              color: Colors.black.withOpacity(0.5),
               blurRadius: 8,
               offset: Offset(0, 4),
             ),
@@ -138,14 +130,15 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         child: Row(
           children: [
-            Icon(Icons.search, color: Colors.grey, size: 24),
+            Icon(Icons.search, color: accentGreen, size: 24),
             SizedBox(width: 10),
             Expanded(
               child: TextField(
+                style: TextStyle(color: Colors.white),
                 decoration: InputDecoration(
                   border: InputBorder.none,
-                  hintText: "Search for recipes",
-                  hintStyle: TextStyle(color: Colors.grey[600]),
+                  hintText: "Search for recipes...",
+                  hintStyle: TextStyle(color: Colors.white54),
                 ),
                 onChanged: (value) {
                   setState(() {
@@ -179,65 +172,75 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         );
       },
-      child: Stack(
-        children: [
-          Container(
-            decoration: BoxDecoration(
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.5),
+              blurRadius: 10,
+              offset: Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            ClipRRect(
               borderRadius: BorderRadius.circular(16),
-              image: DecorationImage(
-                image: NetworkImage(food.imageUrl ?? 'https://via.placeholder.com/150'),
+              child: Image.network(
+                food.imageUrl ?? 'https://via.placeholder.com/150',
+                height: double.infinity,
+                width: double.infinity,
                 fit: BoxFit.cover,
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 8,
-                  offset: Offset(0, 4),
-                ),
-              ],
             ),
-          ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              padding: EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(16),
-                  bottomRight: Radius.circular(16),
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(16),
+                    bottomRight: Radius.circular(16),
+                  ),
+                  gradient: LinearGradient(
+                    colors: [Colors.black.withOpacity(0.8), Colors.transparent],
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                  ),
                 ),
-                color: Colors.black.withOpacity(0.6),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    food.foodName,
-                    style: GoogleFonts.poppins(
-                      textStyle: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      food.foodName,
+                      style: GoogleFonts.poppins(
+                        textStyle: TextStyle(
+                          color: accentGreen,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  ),
-                  Row(
-                    children: [
-                      Icon(Icons.local_fire_department, size: 14, color: Colors.redAccent),
-                      SizedBox(width: 5),
-                      Text(
-                        '${food.calories} Cal',
-                        style: TextStyle(color: Colors.white70, fontSize: 12),
-                      ),
-                    ],
-                  ),
-                ],
+                    Row(
+                      children: [
+                        Icon(Icons.local_fire_department,
+                            size: 14, color: Colors.redAccent),
+                        SizedBox(width: 5),
+                        Text(
+                          '${food.calories} Cal',
+                          style: TextStyle(color: Colors.white70, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -245,7 +248,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget buildCustomLoader() {
     return Center(
       child: CircularProgressIndicator(
-        valueColor: AlwaysStoppedAnimation<Color>(primaryGreen),
+        valueColor: AlwaysStoppedAnimation<Color>(accentGreen),
       ),
     );
   }
