@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:animate_do/animate_do.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../modals/Food.dart';
@@ -23,7 +22,8 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
   Widget build(BuildContext context) {
     super.build(context); // Required for AutomaticKeepAliveClientMixin
     final userProvider = Provider.of<UserProvider>(context);
-    final CustomUser user = userProvider.user!;
+    final CustomUser? user = userProvider.user;
+
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.isDarkMode;
     final primaryBackground = isDarkMode ? Colors.black : Colors.white;
@@ -31,23 +31,25 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
 
     return Scaffold(
       backgroundColor: primaryBackground,
-      appBar: buildAppBar(isDarkMode, accentColor, user),
-      body: Column(
+      appBar: buildAppBarWithShimmer(isDarkMode, accentColor, user),
+      body: user == null
+          ? buildShimmerUserPlaceholder() // Shimmer for user loading
+          : Column(
         children: [
-          FadeInOnce(
-            child: buildSearchBar(isDarkMode, accentColor),
-          ),
+          buildSearchBar(isDarkMode, accentColor),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance.collection('Food').snapshots(),
               builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return buildCustomLoader(accentColor);
+                if (snapshot.connectionState == ConnectionState.waiting || !snapshot.hasData) {
+                  return buildShimmerGrid(); // Shimmer grid for food items
                 }
+
                 if (snapshot.hasError) {
                   return buildErrorState("Error: ${snapshot.error}");
                 }
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+
+                if (snapshot.data!.docs.isEmpty) {
                   return buildEmptyState();
                 }
 
@@ -56,9 +58,8 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                 }).toList();
 
                 final filteredFoodItems = foodItems
-                    .where((food) => food.foodName
-                    .toLowerCase()
-                    .contains(searchQuery.toLowerCase()))
+                    .where((food) =>
+                    food.foodName.toLowerCase().contains(searchQuery.toLowerCase()))
                     .toList();
 
                 return GridView.builder(
@@ -72,14 +73,10 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                   ),
                   itemCount: filteredFoodItems.length,
                   itemBuilder: (context, index) {
-                    return SlideInUp(
-                      duration: Duration(milliseconds: 500 + (index * 50)),
-                      child: buildRecipeCard(
-                        filteredFoodItems[index],
-                        isDarkMode,
-                        accentColor,
-                        key: ValueKey(filteredFoodItems[index].id),
-                      ),
+                    return buildRecipeCard(
+                      filteredFoodItems[index],
+                      isDarkMode,
+                      accentColor,
                     );
                   },
                 );
@@ -91,12 +88,22 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
     );
   }
 
-  AppBar buildAppBar(bool isDarkMode, Color accentColor, CustomUser? user) {
+  AppBar buildAppBarWithShimmer(bool isDarkMode, Color accentColor, CustomUser? user) {
     return AppBar(
       backgroundColor: isDarkMode ? Colors.black : Colors.green[700],
       elevation: 0,
-      title: Text(
-        user != null ? "Welcome Back, ${user.name}!" : "Welcome!",
+      title: user == null
+          ? Shimmer.fromColors(
+        baseColor: Colors.grey[300]!,
+        highlightColor: Colors.grey[100]!,
+        child: Container(
+          width: 150,
+          height: 20,
+          color: Colors.white,
+        ),
+      )
+          : Text(
+        "Welcome Back, ${user.name}!",
         style: GoogleFonts.poppins(
           textStyle: TextStyle(
             color: accentColor,
@@ -108,17 +115,21 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
       actions: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: GestureDetector(
-            onTap: () {
-              // Navigate to User Profile
-            },
+          child: user == null
+              ? Shimmer.fromColors(
+            baseColor: Colors.grey[300]!,
+            highlightColor: Colors.grey[100]!,
             child: CircleAvatar(
               radius: 20,
-              backgroundImage: NetworkImage(
-                user?.profileImageUrl ?? 'https://via.placeholder.com/150',
-              ),
-              backgroundColor: Colors.grey[300],
+              backgroundColor: Colors.white,
             ),
+          )
+              : CircleAvatar(
+            radius: 20,
+            backgroundImage: NetworkImage(
+              user.profileImageUrl ?? 'https://via.placeholder.com/150',
+            ),
+            backgroundColor: Colors.grey[300],
           ),
         ),
       ],
@@ -173,9 +184,8 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
     );
   }
 
-  Widget buildRecipeCard(Food food, bool isDarkMode, Color accentColor, {Key? key}) {
+  Widget buildRecipeCard(Food food, bool isDarkMode, Color accentColor) {
     return GestureDetector(
-      key: key,
       onTap: () {
         Navigator.push(
           context,
@@ -184,92 +194,148 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
           ),
         );
       },
-      child: Hero(
-        tag: food.foodName,
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 10,
-                offset: Offset(0, 6),
-              ),
-            ],
-          ),
-          child: Stack(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: FadeInImage.assetNetwork(
-                  placeholder: 'assets/placeholder.png',
-                  image: food.imageUrl ?? 'https://via.placeholder.com/150',
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 10,
+              offset: Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: food.imageUrl != null
+                  ? Image.network(
+                food.imageUrl!,
+                height: double.infinity,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                loadingBuilder: (BuildContext context, Widget child,
+                    ImageChunkEvent? loadingProgress) {
+                  if (loadingProgress == null) {
+                    return child;
+                  } else {
+                    return Shimmer.fromColors(
+                      baseColor: Colors.grey[300]!,
+                      highlightColor: Colors.grey[100]!,
+                      child: Container(
+                        height: double.infinity,
+                        width: double.infinity,
+                        color: Colors.white,
+                      ),
+                    );
+                  }
+                },
+              )
+                  : Shimmer.fromColors(
+                baseColor: Colors.grey[300]!,
+                highlightColor: Colors.grey[100]!,
+                child: Container(
                   height: double.infinity,
                   width: double.infinity,
-                  fit: BoxFit.cover,
+                  color: Colors.white,
                 ),
               ),
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: Container(
-                  padding: EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(16),
-                      bottomRight: Radius.circular(16),
-                    ),
-                    gradient: LinearGradient(
-                      colors: [Colors.black.withOpacity(0.7), Colors.transparent],
-                      begin: Alignment.bottomCenter,
-                      end: Alignment.topCenter,
-                    ),
+            ),
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(16),
+                    bottomRight: Radius.circular(16),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        food.foodName,
-                        style: GoogleFonts.poppins(
-                          textStyle: TextStyle(
-                            color: accentColor,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                  gradient: LinearGradient(
+                    colors: [Colors.black.withOpacity(0.7), Colors.transparent],
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      food.foodName,
+                      style: GoogleFonts.poppins(
+                        textStyle: TextStyle(
+                          color: accentColor,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      Row(
-                        children: [
-                          Icon(Icons.local_fire_department,
-                              size: 14, color: Colors.redAccent),
-                          SizedBox(width: 5),
-                          Text(
-                            '${food.calories} Cal',
-                            style: TextStyle(color: Colors.white70, fontSize: 12),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                    ),
+                    Row(
+                      children: [
+                        Icon(Icons.local_fire_department,
+                            size: 14, color: Colors.redAccent),
+                        SizedBox(width: 5),
+                        Text(
+                          '${food.calories} Cal',
+                          style: TextStyle(color: Colors.white70, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
+  Widget buildShimmerGrid() {
+    return GridView.builder(
+      padding: EdgeInsets.all(16.0),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        childAspectRatio: 0.85,
+      ),
+      itemCount: 6, // Number of shimmer placeholders
+      itemBuilder: (context, index) {
+        return Shimmer.fromColors(
+          baseColor: Colors.grey[300]!,
+          highlightColor: Colors.grey[100]!,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              color: Colors.white,
+            ),
+          ),
+        );
+      },
+    );
+  }
 
-  Widget buildCustomLoader(Color accentColor) {
+  Widget buildShimmerUserPlaceholder() {
     return Center(
       child: Shimmer.fromColors(
         baseColor: Colors.grey[300]!,
         highlightColor: Colors.grey[100]!,
-        child: Container(
-          height: 100,
-          width: 100,
-          color: Colors.white,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircleAvatar(
+              radius: 40,
+              backgroundColor: Colors.white,
+            ),
+            SizedBox(height: 10),
+            Container(
+              width: 100,
+              height: 20,
+              color: Colors.white,
+            ),
+          ],
         ),
       ),
     );
@@ -310,47 +376,3 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
   @override
   bool get wantKeepAlive => true;
 }
-
-class FadeInOnce extends StatefulWidget {
-  final Widget child;
-
-  FadeInOnce({required this.child});
-
-  @override
-  _FadeInOnceState createState() => _FadeInOnceState();
-}
-
-class _FadeInOnceState extends State<FadeInOnce> with SingleTickerProviderStateMixin {
-  bool _hasPlayed = false;
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 500),
-    )..forward().then((_) {
-      setState(() {
-        _hasPlayed = true;
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return _hasPlayed
-        ? widget.child
-        : FadeTransition(
-      opacity: _controller,
-      child: widget.child,
-    );
-  }
-}
-
