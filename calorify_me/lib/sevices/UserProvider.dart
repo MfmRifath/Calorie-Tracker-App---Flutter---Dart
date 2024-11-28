@@ -197,4 +197,53 @@ class UserProvider with ChangeNotifier {
       print("Error setting target calories: User or User ID is null.");
     }
   }
+  Future<void> deleteFood(String foodId) async {
+    if (_userId == null) {
+      print("Error: User ID is null.");
+      return;
+    }
+    try {
+      // Remove from Firestore
+      await _firestore
+          .collection('users')
+          .doc(_userId)
+          .collection('foodLog')
+          .doc(foodId)
+          .delete();
+
+      // Remove from local food log
+      _foodLog.removeWhere((food) => food.id == foodId);
+
+      notifyListeners();
+    } catch (e) {
+      print("Error deleting food log: $e");
+    }
+  }
+
+  Future<void> deleteAllFoodLogs() async {
+    if (_userId == null) {
+      print("Error: User ID is null.");
+      return;
+    }
+    try {
+      // Remove all food logs from Firestore
+      final foodLogCollection = _firestore
+          .collection('users')
+          .doc(_userId)
+          .collection('foodLog');
+
+      final foodLogDocs = await foodLogCollection.get();
+
+      for (final doc in foodLogDocs.docs) {
+        await doc.reference.delete();
+      }
+
+      // Clear local food log
+      _foodLog.clear();
+
+      notifyListeners();
+    } catch (e) {
+      print("Error deleting all food logs: $e");
+    }
+  }
 }
