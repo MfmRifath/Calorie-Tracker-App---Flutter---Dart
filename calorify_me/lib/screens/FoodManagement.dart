@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../modals/Food.dart';
 import '../sevices/ThameProvider.dart';
 import 'AddFoodScreen.dart';
+import 'EditFood.dart';
 
 class FoodManagementScreen extends StatelessWidget {
   @override
@@ -114,11 +115,25 @@ class FoodManagementScreen extends StatelessWidget {
                         fontSize: 14,
                       ),
                     ),
-                    trailing: IconButton(
-                      icon: Icon(Icons.delete, color: Colors.redAccent),
-                      onPressed: () async {
-                        await _deleteFoodItem(context, snapshot, index);
-                      },
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.edit, color: Colors.blueAccent),
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => EditFoodDialog(food: food),
+                            );
+                          },
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.delete, color: Colors.redAccent),
+                          onPressed: () async {
+                            await _deleteFoodItem(context, snapshot, index);
+                          },
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -131,9 +146,9 @@ class FoodManagementScreen extends StatelessWidget {
         backgroundColor: isDarkMode ? Colors.greenAccent : Colors.teal,
         child: Icon(Icons.add, color: isDarkMode ? Colors.black : Colors.white),
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => AddFoodScreen()),
+          showDialog(
+            context: context,
+            builder: (context) => AddFoodDialog(),
           );
         },
       ),
