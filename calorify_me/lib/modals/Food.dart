@@ -2,6 +2,7 @@ class Food {
   String? id; // Firestore document ID
   String foodName;
   int calories;
+  String? description;
   double protein;
   double fat;
   double foodWeight;
@@ -14,6 +15,7 @@ class Food {
     required this.protein,
     required this.fat,
     required this.foodWeight,
+    this.description,
     this.imageUrl,
   });
 
@@ -25,7 +27,8 @@ class Food {
       'protein': protein,
       'fat': fat,
       'foodWeight': foodWeight,
-      'imageUrl': imageUrl, // Include the image URL in the map
+      'imageUrl': imageUrl,
+      'description':description// Include the image URL in the map
     };
   }
 
@@ -39,6 +42,7 @@ class Food {
       fat: (map['fat'] ?? 0.0).toDouble(),
       foodWeight: (map['foodWeight'] ?? 0.0).toDouble(),
       imageUrl: map['imageUrl'],
+      description: map['description'] ?? "",
     );
   }
 }

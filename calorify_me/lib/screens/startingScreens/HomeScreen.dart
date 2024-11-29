@@ -1,7 +1,9 @@
+import 'package:animate_do/animate_do.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../modals/Food.dart';
@@ -17,10 +19,13 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMixin {
   String searchQuery = '';
+  QueryDocumentSnapshot? lastDocument;
+  bool isLoadingMore = false;
+  final int pageSize = 10;
 
   @override
   Widget build(BuildContext context) {
-    super.build(context); // Required for AutomaticKeepAliveClientMixin
+    super.build(context);
     final userProvider = Provider.of<UserProvider>(context);
     final CustomUser? user = userProvider.user;
 
@@ -29,108 +34,159 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
     final primaryBackground = isDarkMode ? Colors.black : Colors.white;
     final accentColor = themeProvider.accentColor;
 
-    return Scaffold(
-      backgroundColor: primaryBackground,
-      appBar: buildAppBarWithShimmer(isDarkMode, accentColor, user),
-      body: user == null
-          ? buildShimmerUserPlaceholder() // Shimmer for user loading
-          : Column(
-        children: [
-          buildSearchBar(isDarkMode, accentColor),
-          Expanded(
-            child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance.collection('Food').snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting || !snapshot.hasData) {
-                  return buildShimmerGrid(); // Shimmer grid for food items
-                }
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: primaryBackground,
+        appBar: buildAppBarWithGradient(isDarkMode, accentColor, user),
+        body: user == null
+            ? buildShimmerUserPlaceholder()
+            : Column(
+          children: [
+            buildSearchBar(isDarkMode, accentColor),
+            Expanded(
+              child: StreamBuilder<List<Food>>(
+                stream: fetchPaginatedFoodItems(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return buildShimmerGrid();
+                  }
 
-                if (snapshot.hasError) {
-                  return buildErrorState("Error: ${snapshot.error}");
-                }
+                  if (snapshot.hasError) {
+                    return buildErrorState("Error: ${snapshot.error}");
+                  }
 
-                if (snapshot.data!.docs.isEmpty) {
-                  return buildEmptyState();
-                }
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return buildEmptyState();
+                  }
 
-                final foodItems = snapshot.data!.docs.map((doc) {
-                  return Food.fromMap(doc.data() as Map<String, dynamic>, doc.id);
-                }).toList();
+                  final foodItems = snapshot.data!;
+                  final filteredFoodItems = foodItems
+                      .where((food) => food.foodName
+                      .toLowerCase()
+                      .contains(searchQuery.toLowerCase()))
+                      .toList();
 
-                final filteredFoodItems = foodItems
-                    .where((food) =>
-                    food.foodName.toLowerCase().contains(searchQuery.toLowerCase()))
-                    .toList();
-
-                return GridView.builder(
-                  key: ValueKey(searchQuery),
-                  padding: EdgeInsets.all(16.0),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: 0.85,
-                  ),
-                  itemCount: filteredFoodItems.length,
-                  itemBuilder: (context, index) {
-                    return buildRecipeCard(
-                      filteredFoodItems[index],
-                      isDarkMode,
-                      accentColor,
-                    );
-                  },
-                );
-              },
+                  return NotificationListener<ScrollNotification>(
+                    onNotification: (ScrollNotification scrollInfo) {
+                      if (!isLoadingMore &&
+                          scrollInfo.metrics.pixels ==
+                              scrollInfo.metrics.maxScrollExtent) {
+                        loadMoreFoodItems();
+                        return true;
+                      }
+                      return false;
+                    },
+                    child: ListView.builder(
+                      padding: EdgeInsets.symmetric(vertical: 16.0),
+                      itemCount: filteredFoodItems.length,
+                      itemBuilder: (context, index) {
+                        return ZoomIn(
+                          duration: Duration(milliseconds: 300),
+                          child: buildRecipeCard(
+                            filteredFoodItems[index],
+                            isDarkMode,
+                            accentColor,
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
             ),
+            if (isLoadingMore)
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: CircularProgressIndicator(),
+              ),
+          ],
+        ),
+        floatingActionButton: BounceInUp(
+          duration: Duration(milliseconds: 800),
+          child: FloatingActionButton(
+            onPressed: () {
+              // Global action (e.g., Add Recipe)
+            },
+            backgroundColor: Colors.green,
+            child: Icon(Icons.add, color: Colors.white),
           ),
-        ],
+        ),
       ),
     );
   }
 
-  AppBar buildAppBarWithShimmer(bool isDarkMode, Color accentColor, CustomUser? user) {
+  Stream<List<Food>> fetchPaginatedFoodItems() {
+    Query query = FirebaseFirestore.instance.collection('Food').limit(pageSize);
+    if (lastDocument != null) {
+      query = query.startAfterDocument(lastDocument!);
+    }
+    return query.snapshots().map((snapshot) {
+      if (snapshot.docs.isNotEmpty) {
+        lastDocument = snapshot.docs.last;
+      }
+      return snapshot.docs
+          .map((doc) => Food.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+          .toList();
+    });
+  }
+
+  void loadMoreFoodItems() async {
+    setState(() => isLoadingMore = true);
+    final query = FirebaseFirestore.instance
+        .collection('Food')
+        .startAfterDocument(lastDocument!)
+        .limit(pageSize);
+    final snapshot = await query.get();
+    if (snapshot.docs.isNotEmpty) {
+      lastDocument = snapshot.docs.last;
+    }
+    setState(() => isLoadingMore = false);
+  }
+
+  AppBar buildAppBarWithGradient(bool isDarkMode, Color accentColor, CustomUser? user) {
     return AppBar(
-      backgroundColor: isDarkMode ? Colors.black : Colors.green[700],
-      elevation: 0,
-      title: user == null
-          ? Shimmer.fromColors(
-        baseColor: Colors.grey[300]!,
-        highlightColor: Colors.grey[100]!,
-        child: Container(
-          width: 150,
-          height: 20,
-          color: Colors.white,
-        ),
-      )
-          : Text(
-        "Welcome Back, ${user.name}!",
-        style: GoogleFonts.poppins(
-          textStyle: TextStyle(
-            color: accentColor,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
+      flexibleSpace: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.green[700]!, Colors.teal],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
         ),
       ),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: user == null
-              ? Shimmer.fromColors(
-            baseColor: Colors.grey[300]!,
-            highlightColor: Colors.grey[100]!,
-            child: CircleAvatar(
+      title: Row(
+        children: [
+          if (user != null && user.profileImageUrl != null)
+            CircleAvatar(
               radius: 20,
-              backgroundColor: Colors.white,
+              backgroundImage: CachedNetworkImageProvider(user.profileImageUrl!),
+              backgroundColor: Colors.grey[300],
+            )
+          else
+            CircleAvatar(
+              radius: 20,
+              backgroundColor: Colors.grey[300],
+              child: Icon(Icons.person, color: Colors.white),
             ),
-          )
-              : CircleAvatar(
-            radius: 20,
-            backgroundImage: NetworkImage(
-              user.profileImageUrl ?? 'https://via.placeholder.com/150',
+          SizedBox(width: 10),
+          Text(
+            user == null ? "Welcome!" : "Welcome Back, ${user.name}!",
+            style: GoogleFonts.poppins(
+              textStyle: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-            backgroundColor: Colors.grey[300],
           ),
+        ],
+      ),
+      actions: [
+        IconButton(
+          icon: Icon(Icons.settings, color: Colors.white),
+          onPressed: () {
+            // Navigate to settings
+          },
         ),
       ],
     );
@@ -195,96 +251,105 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
         );
       },
       child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            colors: [
+              isDarkMode ? Colors.grey[900]! : Colors.white,
+              isDarkMode ? Colors.grey[800]! : Colors.grey[100]!,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withOpacity(0.1),
               blurRadius: 10,
               offset: Offset(0, 6),
             ),
           ],
         ),
-        child: Stack(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: food.imageUrl != null
-                  ? Image.network(
-                food.imageUrl!,
-                height: double.infinity,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                loadingBuilder: (BuildContext context, Widget child,
-                    ImageChunkEvent? loadingProgress) {
-                  if (loadingProgress == null) {
-                    return child;
-                  } else {
-                    return Shimmer.fromColors(
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                  child: CachedNetworkImage(
+                    imageUrl: food.imageUrl ?? 'https://via.placeholder.com/150',
+                    height: 180,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Shimmer.fromColors(
                       baseColor: Colors.grey[300]!,
                       highlightColor: Colors.grey[100]!,
-                      child: Container(
-                        height: double.infinity,
-                        width: double.infinity,
-                        color: Colors.white,
-                      ),
-                    );
-                  }
-                },
-              )
-                  : Shimmer.fromColors(
-                baseColor: Colors.grey[300]!,
-                highlightColor: Colors.grey[100]!,
-                child: Container(
-                  height: double.infinity,
-                  width: double.infinity,
-                  color: Colors.white,
+                      child: Container(color: Colors.white),
+                    ),
+                    errorWidget: (context, url, error) => Icon(Icons.error),
+                  ),
                 ),
-              ),
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: IconButton(
+                    icon: Icon(Icons.favorite_border, color: Colors.redAccent, size: 28),
+                    onPressed: () {
+                      // Handle favorite action
+                    },
+                  ),
+                ),
+              ],
             ),
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                padding: EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(16),
-                    bottomRight: Radius.circular(16),
-                  ),
-                  gradient: LinearGradient(
-                    colors: [Colors.black.withOpacity(0.7), Colors.transparent],
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      food.foodName,
-                      style: GoogleFonts.poppins(
-                        textStyle: TextStyle(
-                          color: accentColor,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+            Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    food.foodName,
+                    style: GoogleFonts.poppins(
+                      textStyle: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: accentColor,
                       ),
                     ),
-                    Row(
-                      children: [
-                        Icon(Icons.local_fire_department,
-                            size: 14, color: Colors.redAccent),
-                        SizedBox(width: 5),
-                        Text(
-                          '${food.calories} Cal',
-                          style: TextStyle(color: Colors.white70, fontSize: 12),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.local_fire_department, size: 18, color: Colors.redAccent),
+                          SizedBox(width: 4),
+                          Text(
+                            '${food.calories} Cal',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: isDarkMode ? Colors.white70 : Colors.grey[700],
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Icon(Icons.restaurant, size: 18, color: Colors.orangeAccent),
+                          SizedBox(width: 4),
+                          Text(
+                            '${food.fat}g Fat',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: isDarkMode ? Colors.white70 : Colors.grey[700],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ],
@@ -292,21 +357,18 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
       ),
     );
   }
+
   Widget buildShimmerGrid() {
-    return GridView.builder(
+    return ListView.builder(
       padding: EdgeInsets.all(16.0),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        childAspectRatio: 0.85,
-      ),
-      itemCount: 6, // Number of shimmer placeholders
+      itemCount: 6,
       itemBuilder: (context, index) {
         return Shimmer.fromColors(
           baseColor: Colors.grey[300]!,
           highlightColor: Colors.grey[100]!,
           child: Container(
+            height: 150,
+            margin: EdgeInsets.symmetric(vertical: 8),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
               color: Colors.white,

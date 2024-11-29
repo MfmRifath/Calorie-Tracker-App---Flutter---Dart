@@ -33,7 +33,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
       if (mounted) {
         setState(() {
           caloryController.text =
-              userProvider.user?.targetCalories?.toString() ?? '2000';
+              userProvider.user?.targetCalories.toString() ?? '2000';
           waterController.text =
               userProvider.user?.waterLog.targetWaterConsumption.toString() ??
                   '2000';
