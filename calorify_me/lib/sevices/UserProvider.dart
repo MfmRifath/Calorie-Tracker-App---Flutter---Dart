@@ -20,6 +20,30 @@ class UserProvider with ChangeNotifier {
 
   UserProvider();
 
+  String _role = 'USER'; // Default role
+  bool _isLoading = true;
+
+  String get role => _role;
+  bool get isLoading => _isLoading;
+
+  Future<void> fetchUserRole() async {
+    try {
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+
+      if (userId != null) {
+        final userDoc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+        _role = userDoc.data()?['role'] ?? 'USER'; // Default to 'USER' if role is not found
+      } else {
+        _role = 'USER';
+      }
+    } catch (e) {
+      print('Error fetching user role: $e');
+      _role = 'USER'; // Fallback to 'USER' in case of error
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
   void setUserId(String id) {
     _userId = id;
     SchedulerBinding.instance.addPostFrameCallback((_) {

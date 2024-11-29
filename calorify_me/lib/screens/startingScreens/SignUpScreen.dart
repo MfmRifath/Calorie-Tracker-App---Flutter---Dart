@@ -300,7 +300,7 @@ class _UserSignUpScreenState extends State<UserSignUpScreen> {
           weight: weight,
           height: height,
           waterLog: Water(targetWaterConsumption: 2000, currentWaterConsumption: 0),
-          profileImageUrl: _profileImage != null ? _profileImage!.path : null,
+          profileImageUrl: _profileImage != null ? _profileImage!.path : null, role: 'USER',
         );
 
         final userProvider = Provider.of<UserProvider>(context, listen: false);

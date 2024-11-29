@@ -11,6 +11,7 @@ class CustomUser {
   String email;
   double weight;
   double height;
+  String role;
   List<Food>? foodLog;
   Water waterLog;
   late BMI bmi;
@@ -23,6 +24,7 @@ class CustomUser {
 
   CustomUser({
     required this.id,
+    required this.role,
     required this.name,
     required this.age,
     required this.weight,
@@ -93,7 +95,8 @@ class CustomUser {
       waterLog: Water.fromMap(data['waterLog'] ?? {}),
       targetCalories: data['targetCalories'] ?? 2000,
       profileImageUrl: data['profileImageUrl'],
-      email: data['email']?? ''
+      email: data['email']?? '',
+        role: data['role'] ?? ''
     )
       ..foodLog = foodSnapshot.docs.map((doc) => Food.fromMap(doc.data(),doc.id)).toList()
       ..consumedFoodLog =
