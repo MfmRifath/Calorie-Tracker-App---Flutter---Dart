@@ -19,6 +19,7 @@ class _AddFoodDialogState extends State<AddFoodDialog> {
   final TextEditingController proteinController = TextEditingController();
   final TextEditingController fatController = TextEditingController();
   final TextEditingController foodWeightController = TextEditingController();
+  final TextEditingController descriptionController = TextEditingController();
 
   File? _imageFile;
   final ImagePicker _picker = ImagePicker();
@@ -58,6 +59,7 @@ class _AddFoodDialogState extends State<AddFoodDialog> {
         protein: double.parse(proteinController.text),
         fat: double.parse(fatController.text),
         foodWeight: double.parse(foodWeightController.text),
+        description: descriptionController.text,
         imageUrl: imageUrl,
       );
 
@@ -147,6 +149,12 @@ class _AddFoodDialogState extends State<AddFoodDialog> {
                   controller: foodNameController,
                   labelText: 'Food Name',
                   icon: Icons.fastfood,
+                ),
+                SizedBox(height: 20),
+                _buildTextField(
+                  controller: descriptionController,
+                  labelText: 'Food Name',
+                  icon: Icons.description,
                 ),
                 _buildTextField(
                   controller: caloriesController,

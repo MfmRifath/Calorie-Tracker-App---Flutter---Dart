@@ -185,6 +185,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       widget.user.weight = _weight;
                       widget.user.height = _height;
                       widget.user.targetCalories = _targetCalories;
+                      widget.user.role = widget.user.role;
+                      widget.user.waterLog = widget.user.waterLog;
+                      widget.user.consumedFoodLog = widget.user.consumedFoodLog;
+                      widget.user.foodLog = widget.user.foodLog;
 
                       if (_image != null) {
                         String? imageUrl = await _uploadImage(_image!);

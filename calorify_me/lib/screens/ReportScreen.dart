@@ -7,516 +7,293 @@ import '../sevices/FoodProvider.dart';
 import '../sevices/ThameProvider.dart';
 import '../sevices/UserProvider.dart';
 
-
-import 'dart:ui';
-
 class ReportsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.isDarkMode;
 
-    final Color primaryGreen = isDarkMode ? Colors.greenAccent : Color(0xFF1B5E20);
-    final Color lightGreen = isDarkMode ? Colors.greenAccent : Color(0xFF66BB6A);
-    final Color darkGreen = isDarkMode ? Colors.grey[850]! : Color(0xFF004D40);
-    final Color accentGreen = isDarkMode ? Colors.lightGreenAccent : Color(0xFF81C784);
+    final Color primaryColor = isDarkMode ? Colors.greenAccent : Color(0xFF4CAF50);
+    final Color secondaryColor = isDarkMode ? Colors.green : Color(0xFF81C784);
+    final Color backgroundColor = isDarkMode ? Colors.black : Color(0xFFE8F5E9);
 
     return Scaffold(
-      extendBodyBehindAppBar: true,
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.grey,
-        elevation: 0,
-        title: FadeIn(
-          duration: Duration(milliseconds: 800),
-          child: Text(
-            "Monthly Report",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-            ),
+        backgroundColor: primaryColor,
+        elevation: 4,
+        title: Text(
+          "Reports Overview",
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
         ),
         centerTitle: true,
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [darkGreen, primaryGreen],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
-          child: SingleChildScrollView(
-            child: Consumer2<FoodProvider, UserProvider>(
-              builder: (context, foodProvider, userProvider, child) {
-                if (foodProvider.isLoading || userProvider.user == null) {
-                  return Center(
-                    child: CircularProgressIndicator(color: lightGreen),
-                  );
-                }
-                if (foodProvider.dailyFoodLog.isEmpty) {
-                  return Center(
-                    child: Text(
-                      "No data available for this month.",
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: lightGreen,
-                      ),
-                    ),
-                  );
-                }
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Consumer2<FoodProvider, UserProvider>(
+          builder: (context, foodProvider, userProvider, child) {
+            if (foodProvider.isLoading || userProvider.user == null) {
+              return Center(
+                child: CircularProgressIndicator(color: primaryColor),
+              );
+            }
+            if (foodProvider.dailyFoodLog.isEmpty) {
+              return Center(
+                child: Text(
+                  "No data available for this month.",
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: primaryColor,
+                  ),
+                ),
+              );
+            }
 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    SizedBox(height: 70),
-                    AnimatedWidgetWrapper(child: GlassCard(
-                      child: buildMonthlySummary(foodProvider, lightGreen, accentGreen),
-                    )),
-                    SizedBox(height: 30),
-                    AnimatedWidgetWrapper(
-                      child: buildCaloriesTrendChart(foodProvider, lightGreen, accentGreen),
-                    ),
-                    SizedBox(height: 30),
-                    AnimatedWidgetWrapper(
-                      child: buildNutrientBreakdownChart(foodProvider, lightGreen),
-                    ),
-                    SizedBox(height: 30),
-                    AnimatedWidgetWrapper(
-                      child: buildHydrationProgress(userProvider, lightGreen, accentGreen),
-                    ),
-                    SizedBox(height: 30),
-                    AnimatedWidgetWrapper(
-                      child: buildMealConsistencyChart(foodProvider, lightGreen, accentGreen),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
+            return ListView(
+              children: [
+                _buildAnimatedSectionHeader("Summary", primaryColor),
+                _buildAnimatedSummaryCard(foodProvider, primaryColor),
+                SizedBox(height: 20),
+                _buildAnimatedSectionHeader("Calories Trend", primaryColor),
+                _buildAnimatedCaloriesTrendChart(foodProvider, primaryColor),
+                SizedBox(height: 20),
+                _buildAnimatedSectionHeader("Nutrient Breakdown", primaryColor),
+                _buildAnimatedNutrientBreakdownChart(foodProvider, primaryColor),
+                SizedBox(height: 20),
+                _buildAnimatedSectionHeader("Hydration Progress", primaryColor),
+                _buildAnimatedHydrationProgress(userProvider, primaryColor, secondaryColor),
+                SizedBox(height: 20),
+                _buildAnimatedSectionHeader("Meal Consistency", primaryColor),
+                _buildAnimatedMealConsistencyChart(foodProvider, primaryColor, secondaryColor),
+              ],
+            );
+          },
         ),
       ),
     );
   }
 
-  Widget buildMonthlySummary(FoodProvider foodProvider, Color lightGreen, Color accentGreen) {
-    final totalCalories = foodProvider.dailyFoodLog.fold(0, (sum, food) => sum + food.calories);
-    final avgDailyCalories = (totalCalories / foodProvider.dailyFoodLog.length).toInt();
-    final highestCalories = foodProvider.dailyFoodLog.map((e) => e.calories).reduce(max);
-    final lowestCalories = foodProvider.dailyFoodLog.map((e) => e.calories).reduce(min);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [lightGreen.withOpacity(0.2), accentGreen.withOpacity(0.4)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            spreadRadius: 4,
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Monthly Summary",
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: lightGreen,
-            ),
-          ),
-          SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              buildSummaryCard("Total", "$totalCalories Cal", accentGreen),
-              buildSummaryCard("Avg Daily", "$avgDailyCalories Cal", lightGreen),
-              buildSummaryCard("Highest", "$highestCalories Cal", Colors.redAccent),
-              buildSummaryCard("Lowest", "$lowestCalories Cal", Colors.orangeAccent),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget buildSummaryCard(String label, String value, Color color) {
-    return Expanded(
-      child: Column(
-        children: [
-          Text(
-            label,
-            style: TextStyle(fontSize: 14, color: color, fontWeight: FontWeight.w500),
-          ),
-          SizedBox(height: 5),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-class GlassCard extends StatelessWidget {
-  final Widget child;
-
-  GlassCard({required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          ),
-        ],
-        border: Border.all(
-          color: Colors.white.withOpacity(0.5),
-          width: 1,
-        ),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: child,
-        ),
-      ),
-    );
-  }
-}
-
-class AnimatedWidgetWrapper extends StatelessWidget {
-  final Widget child;
-
-  AnimatedWidgetWrapper({required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return ZoomIn(
-      duration: Duration(milliseconds: 700),
-      child: child,
-    );
-  }
-}
-
-  Widget buildMonthlySummary(FoodProvider foodProvider, Color lightGreen, Color accentGreen) {
-    final totalCalories = foodProvider.dailyFoodLog.fold(0, (sum, food) => sum + food.calories);
-    final avgDailyCalories = (totalCalories / foodProvider.dailyFoodLog.length).toInt();
-    final highestCalories = foodProvider.dailyFoodLog.map((e) => e.calories).reduce(max);
-    final lowestCalories = foodProvider.dailyFoodLog.map((e) => e.calories).reduce(min);
-
-    return Container(
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [lightGreen.withOpacity(0.2), accentGreen.withOpacity(0.4)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            spreadRadius: 4,
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Monthly Summary",
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: lightGreen,
-            ),
-          ),
-          SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              buildSummaryCard("Total", "$totalCalories Cal", accentGreen),
-              buildSummaryCard("Avg Daily", "$avgDailyCalories Cal", lightGreen),
-              buildSummaryCard("Highest", "$highestCalories Cal", Colors.redAccent),
-              buildSummaryCard("Lowest", "$lowestCalories Cal", Colors.orangeAccent),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget buildSummaryCard(String label, String value, Color color) {
-    return Column(
-      children: [
-        Text(
-          label,
-          style: TextStyle(fontSize: 14, color: color, fontWeight: FontWeight.w500),
-        ),
-        SizedBox(height: 5),
-        Text(
-          value,
+  Widget _buildAnimatedSectionHeader(String title, Color color) {
+    return FadeInLeft(
+      duration: Duration(milliseconds: 800),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: Text(
+          title,
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 20,
             fontWeight: FontWeight.bold,
             color: color,
           ),
         ),
-      ],
+      ),
     );
   }
 
-  Widget buildCaloriesTrendChart(FoodProvider foodProvider, Color lightGreen, Color accentGreen) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "Calories Trend Over the Month",
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: lightGreen,
-          ),
-        ),
-        SizedBox(height: 10),
-        AspectRatio(
-          aspectRatio: 1.7,
-          child: LineChart(
-            LineChartData(
-              borderData: FlBorderData(show: false),
-              gridData: FlGridData(show: false),
-              titlesData: FlTitlesData(
-                bottomTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    getTitlesWidget: (value, _) {
-                      return Text(
-                        (value + 1).toInt().toString(),
-                        style: TextStyle(color: lightGreen, fontWeight: FontWeight.bold),
-                      );
-                    },
-                  ),
-                ),
-                leftTitles: AxisTitles(
-                  sideTitles: SideTitles(showTitles: false),
-                ),
+  Widget _buildAnimatedSummaryCard(FoodProvider foodProvider, Color primaryColor) {
+    final totalCalories = foodProvider.dailyFoodLog.fold(0, (sum, food) => sum + food.calories);
+    final avgDailyCalories = (totalCalories / foodProvider.dailyFoodLog.length).toInt();
+    final highestCalories = foodProvider.dailyFoodLog.map((e) => e.calories).reduce(max);
+    final lowestCalories = foodProvider.dailyFoodLog.map((e) => e.calories).reduce(min);
+
+    return SlideInUp(
+      duration: Duration(milliseconds: 800),
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        elevation: 6,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildSummaryTile("Total", "$totalCalories Cal", primaryColor),
+                  _buildSummaryTile("Avg Daily", "$avgDailyCalories Cal", Colors.teal),
+                  _buildSummaryTile("Highest", "$highestCalories Cal", Colors.redAccent),
+                  _buildSummaryTile("Lowest", "$lowestCalories Cal", Colors.orangeAccent),
+                ],
               ),
-              lineBarsData: [
-                LineChartBarData(
-                  spots: List.generate(
-                    foodProvider.dailyFoodLog.length,
-                        (index) {
-                      return FlSpot(
-                        index.toDouble(),
-                        foodProvider.dailyFoodLog[index].calories.toDouble(),
-                      );
-                    },
-                  ),
-                  isCurved: true,
-                  color: accentGreen,
-                  barWidth: 4,
-                  belowBarData: BarAreaData(
-                    show: true,
-                    color: accentGreen.withOpacity(0.3),
-                  ),
-                ),
-              ],
-            ),
+            ],
           ),
         ),
-      ],
+      ),
     );
   }
 
-  Widget buildNutrientBreakdownChart(FoodProvider foodProvider, Color lightGreen) {
-    final totalCarbs = foodProvider.dailyFoodLog.fold<double>(0.0, (sum, food) => sum + food.calories);
-    final totalProteins = foodProvider.dailyFoodLog.fold<double>(0.0, (sum, food) => sum + food.protein);
-    final totalFats = foodProvider.dailyFoodLog.fold<double>(0.0, (sum, food) => sum + food.fat);
-
+  Widget _buildSummaryTile(String label, String value, Color color) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Monthly Nutrient Breakdown",
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: lightGreen,
-          ),
+          label,
+          style: TextStyle(fontSize: 14, color: color, fontWeight: FontWeight.w600),
         ),
-        SizedBox(height: 10),
-        AspectRatio(
-          aspectRatio: 1.3,
-          child: PieChart(
-            PieChartData(
-              sections: [
-                PieChartSectionData(
-                  value: totalCarbs,
-                  color: Colors.blue,
-                  title: "Carbs",
-                  radius: 50,
-                  titleStyle: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                PieChartSectionData(
-                  value: totalProteins,
-                  color: Colors.redAccent,
-                  title: "Proteins",
-                  radius: 50,
-                  titleStyle: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                PieChartSectionData(
-                  value: totalFats,
-                  color: Colors.yellowAccent,
-                  title: "Fats",
-                  radius: 50,
-                  titleStyle: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-              ],
-              borderData: FlBorderData(show: false),
-              sectionsSpace: 3,
-              centerSpaceRadius: 40,
-            ),
-          ),
+        SizedBox(height: 8),
+        Text(
+          value,
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color),
         ),
       ],
     );
   }
 
-  Widget buildHydrationProgress(UserProvider userProvider, Color lightGreen, Color accentGreen) {
+  Widget _buildAnimatedCaloriesTrendChart(FoodProvider foodProvider, Color primaryColor) {
+    return ZoomIn(
+      duration: Duration(milliseconds: 1000),
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        elevation: 6,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: AspectRatio(
+            aspectRatio: 1.5,
+            child: LineChart(
+              LineChartData(
+                borderData: FlBorderData(show: false),
+                gridData: FlGridData(show: true, drawVerticalLine: false),
+                titlesData: FlTitlesData(
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: true),
+                  ),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: true),
+                  ),
+                ),
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: List.generate(
+                      foodProvider.dailyFoodLog.length,
+                          (index) => FlSpot(
+                          index.toDouble(), foodProvider.dailyFoodLog[index].calories.toDouble()),
+                    ),
+                    isCurved: true,
+                    gradient: LinearGradient(
+                      colors: [primaryColor.withOpacity(0.6), primaryColor],
+                    ),
+                    barWidth: 4,
+                    belowBarData: BarAreaData(show: true, color: primaryColor.withOpacity(0.2)),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAnimatedNutrientBreakdownChart(FoodProvider foodProvider, Color primaryColor) {
+    final carbs = foodProvider.dailyFoodLog.fold(0.0, (sum, food) => sum + food.calories);
+    final protein = foodProvider.dailyFoodLog.fold(0.0, (sum, food) => sum + food.protein);
+    final fats = foodProvider.dailyFoodLog.fold(0.0, (sum, food) => sum + food.fat);
+
+    return FadeInRight(
+      duration: Duration(milliseconds: 800),
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        elevation: 6,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: AspectRatio(
+            aspectRatio: 1.5,
+            child: PieChart(
+              PieChartData(
+                sections: [
+                  PieChartSectionData(value: carbs, color: Colors.lightGreen, title: "Carbs"),
+                  PieChartSectionData(value: protein, color: Colors.teal, title: "Protein"),
+                  PieChartSectionData(value: fats, color: Colors.yellowAccent, title: "Fats"),
+                ],
+                borderData: FlBorderData(show: false),
+                centerSpaceRadius: 40,
+                sectionsSpace: 2,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAnimatedHydrationProgress(UserProvider userProvider, Color primaryColor, Color secondaryColor) {
     final waterLog = userProvider.user?.waterLog;
-    final totalWater = waterLog?.currentWaterConsumption ?? 0.0;
+    final currentWater = waterLog?.currentWaterConsumption ?? 0.0;
     final targetWater = waterLog?.targetWaterConsumption ?? 3000.0;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "Hydration Progress",
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: lightGreen,
+    return SlideInLeft(
+      duration: Duration(milliseconds: 800),
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        elevation: 6,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              LinearProgressIndicator(
+                value: currentWater / targetWater,
+                color: primaryColor,
+                backgroundColor: secondaryColor.withOpacity(0.3),
+                minHeight: 8,
+              ),
+              SizedBox(height: 10),
+              Text(
+                "${currentWater.toInt()} ml / ${targetWater.toInt()} ml",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: primaryColor),
+              ),
+            ],
           ),
         ),
-        SizedBox(height: 10),
-        LinearProgressIndicator(
-          value: totalWater / targetWater,
-          color: accentGreen,
-          backgroundColor: Colors.grey[800],
-        ),
-        SizedBox(height: 5),
-        Text(
-          "${totalWater.toStringAsFixed(0)} ml / ${targetWater.toStringAsFixed(0)} ml",
-          style: TextStyle(color: lightGreen, fontSize: 16),
-        ),
-      ],
+      ),
     );
   }
 
-  Widget buildMealConsistencyChart(FoodProvider foodProvider, Color lightGreen, Color accentGreen) {
-    final mealCounts = {
-      "Breakfast": 0,
-      "Lunch": 0,
-      "Dinner": 0,
-      "Snacks": 0,
+  Widget _buildAnimatedMealConsistencyChart(FoodProvider foodProvider, Color primaryColor, Color secondaryColor) {
+    final mealData = {
+      "Breakfast": foodProvider.dailyFoodLog.where((food) => food.mealType == "Breakfast").length,
+      "Lunch": foodProvider.dailyFoodLog.where((food) => food.mealType == "Lunch").length,
+      "Dinner": foodProvider.dailyFoodLog.where((food) => food.mealType == "Dinner").length,
+      "Snacks": foodProvider.dailyFoodLog.where((food) => food.mealType == "Snacks").length,
     };
 
-    for (var log in foodProvider.dailyFoodLog) {
-      mealCounts[log.mealType] = (mealCounts[log.mealType] ?? 0) + 1;
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "Meal Consistency",
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: lightGreen,
-          ),
-        ),
-        SizedBox(height: 10),
-        AspectRatio(
-          aspectRatio: 1.5,
-          child: BarChart(
-            BarChartData(
-              barGroups: mealCounts.entries.map((entry) {
-                return BarChartGroupData(
-                  x: entry.key.hashCode,
-                  barRods: [
-                    BarChartRodData(
-                      toY: entry.value.toDouble(),
-                      color: accentGreen,
-                      width: 20,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ],
-                  showingTooltipIndicators: [0],
-                );
-              }).toList(),
-              titlesData: FlTitlesData(
-                leftTitles: AxisTitles(
-                  sideTitles: SideTitles(showTitles: true),
-                ),
-                bottomTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    getTitlesWidget: (value, meta) {
-                      final meal = mealCounts.keys.firstWhere(
-                              (key) => key.hashCode == value.toInt(),
-                          orElse: () => '');
-                      return Text(
-                        meal,
-                        style: TextStyle(color: lightGreen),
-                      );
-                    },
+    return ZoomIn(
+      duration: Duration(milliseconds: 1000),
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        elevation: 6,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: AspectRatio(
+            aspectRatio: 1.5,
+            child: BarChart(
+              BarChartData(
+                barGroups: mealData.entries
+                    .map(
+                      (entry) => BarChartGroupData(
+                    x: entry.key.hashCode,
+                    barRods: [
+                      BarChartRodData(
+                        toY: entry.value.toDouble(),
+                        gradient: LinearGradient(colors: [primaryColor, secondaryColor]),
+                        width: 16,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ],
+                  ),
+                )
+                    .toList(),
+                titlesData: FlTitlesData(
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: true),
                   ),
                 ),
               ),
             ),
           ),
         ),
-      ],
+      ),
     );
   }
-
+}

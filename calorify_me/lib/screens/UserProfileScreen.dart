@@ -237,7 +237,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             _buildDetailRow('Email:', user.email, theme, Colors.white70),
             _buildDetailRow('Age:', '${user.age}', theme, Colors.white),
             _buildDetailRow('Weight:', '${user.weight} kg', theme, Colors.white),
-            _buildDetailRow('Height:', '${user.height} cm', theme, Colors.white70),
+            _buildDetailRow('Height:', '${user.height} m', theme, Colors.white70),
             _buildDetailRow('BMI:', '${user.calculateBMI().toStringAsFixed(2)}', theme, Colors.white),
             _buildDetailRow('BMI Category:', user.getBMICategory(), theme, Colors.white70),
             _buildDetailRow('Target Calories:', '${user.targetCalories} kcal', theme, Colors.white),
@@ -624,6 +624,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     final TextEditingController proteinController = TextEditingController();
     final TextEditingController fatController = TextEditingController();
     final TextEditingController foodWeightController = TextEditingController();
+
 
     final _formKey = GlobalKey<FormState>();
 

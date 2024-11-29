@@ -91,4 +91,9 @@ class WaterProvider with ChangeNotifier {
       print("Error resetting water log: $e");
     }
   }
+  void resetWaterLog() {
+    _waterLog.currentWaterConsumption = 0.0;
+    notifyListeners();
+  }
+
 }

@@ -1,6 +1,7 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../modals/Users.dart';
 import '../sevices/FoodProvider.dart';
 import '../sevices/ThameProvider.dart';
 import '../sevices/UserProvider.dart';
@@ -33,10 +34,9 @@ class _DiaryScreenState extends State<DiaryScreen> {
       if (mounted) {
         setState(() {
           caloryController.text =
-              userProvider.user?.targetCalories.toString() ?? '2000';
+              userProvider.user?.targetCalories?.toString() ?? '2000';
           waterController.text =
-              userProvider.user?.waterLog.targetWaterConsumption.toString() ??
-                  '2000';
+              userProvider.user?.waterLog?.targetWaterConsumption?.toString() ?? '2000';
         });
       }
     } catch (e) {
@@ -45,7 +45,6 @@ class _DiaryScreenState extends State<DiaryScreen> {
       );
     }
   }
-
   @override
   void dispose() {
     caloryController.dispose();
@@ -61,32 +60,97 @@ class _DiaryScreenState extends State<DiaryScreen> {
 
     return Scaffold(
       backgroundColor: isDarkMode ? Colors.black : Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        flexibleSpace: Container(
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(100), // Increased height for visual prominence
+        child: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: isDarkMode
-                  ? [Colors.grey[900]!, Colors.black]
+                  ? [Colors.greenAccent.shade400, Colors.black]
                   : [Colors.green.shade400, Colors.green.shade700],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
+            borderRadius: BorderRadius.vertical(
+              bottom: Radius.circular(30), // Smoothly rounded bottom corners
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.25),
+                offset: Offset(0, 6),
+                blurRadius: 12,
+              ),
+            ],
           ),
-        ),
-        title: Hero(
-          tag: 'diary-title',
-          child: Text(
-            "Diary",
-            style: TextStyle(
-              color: isDarkMode ? Colors.greenAccent : Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
+          child: SafeArea(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Logo Section with Ripple Effect
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: RadialGradient(
+                          colors: [
+                            Colors.white.withOpacity(0.3),
+                            Colors.white.withOpacity(0.1),
+                            Colors.transparent,
+                          ],
+                          center: Alignment.center,
+                          radius: 1.5,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isDarkMode
+                              ? Colors.greenAccent.withOpacity(0.8)
+                              : Colors.white.withOpacity(0.7),
+                          width: 3,
+                        ),
+                      ),
+                      child: Center(
+                        child: Image.asset(
+                          'assets/images/logo.png', // Replace with the path to your app logo
+                          height: 40,
+                          width: 40,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(width: 16),
+                // Title Section
+                Text(
+                  "Diary",
+                  style: TextStyle(
+                    fontFamily: 'Pacifico', // Elegant font for a premium feel
+                    fontSize: 28,
+                    fontWeight: FontWeight.w600,
+                    color: isDarkMode ? Colors.greenAccent : Colors.white,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withOpacity(0.2),
+                        offset: Offset(3, 3),
+                        blurRadius: 6,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ),
-        centerTitle: true,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -94,8 +158,6 @@ class _DiaryScreenState extends State<DiaryScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              buildTargetSection(context, isDarkMode),
-              SizedBox(height: 20),
               buildSummarySection(context, isDarkMode),
               SizedBox(height: 20),
               buildMealSection(context, "Breakfast", isDarkMode),
@@ -104,6 +166,9 @@ class _DiaryScreenState extends State<DiaryScreen> {
               buildMealSection(context, "Snacks", isDarkMode),
               SizedBox(height: 20),
               buildWaterSection(context, isDarkMode),
+              SizedBox(height: 20),
+              buildTargetSection(context, isDarkMode),
+
             ],
           ),
         ),
@@ -228,64 +293,74 @@ class _DiaryScreenState extends State<DiaryScreen> {
     );
   }
   Widget buildSummarySection(BuildContext context, bool isDarkMode) {
-    return Consumer2<FoodProvider, UserProvider>(
-      builder: (context, foodProvider, userProvider, child) {
-        final totalWater =
-            userProvider.user?.waterLog.currentWaterConsumption ?? 0;
-        final totalCalories = foodProvider.getTotalCalories();
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
 
-        return _buildAnimatedCard(
-          isDarkMode: isDarkMode,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _sectionTitle('Your Daily Summary', isDarkMode),
-              SizedBox(height: 20),
-              // Adding a motivational text
-              Text(
-                "Keep up the great work! Stay hydrated and eat healthy.",
-                style: TextStyle(
-                  fontSize: 14,
-                  fontStyle: FontStyle.italic,
-                  color: isDarkMode ? Colors.grey[300] : Colors.grey[600],
+    return FutureBuilder<CustomUser?>(
+      future: userProvider.findCurrentCustomUser(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(
+            child: Text("Error loading user data: ${snapshot.error}"),
+          );
+        } else if (snapshot.hasData) {
+          final customUser = snapshot.data!;
+
+          return _buildAnimatedCard(
+            isDarkMode: isDarkMode,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _sectionTitle('Your Daily Summary', isDarkMode),
+                SizedBox(height: 20),
+                Text(
+                  "Keep up the great work! Stay hydrated and eat healthy.",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontStyle: FontStyle.italic,
+                    color: isDarkMode ? Colors.grey[300] : Colors.grey[600],
+                  ),
                 ),
-              ),
-              SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildEnhancedProgressIndicator(
-                    "Calories",
-                    totalCalories.toDouble(),
-                    2000,
-                    Colors.green,
-                    Icons.local_fire_department,
-                  ),
-                  _buildEnhancedProgressIndicator(
-                    "Water",
-                    totalWater,
-                    2000,
-                    Colors.blue,
-                    Icons.water_drop,
-                  ),
-                ],
-              ),
-              SizedBox(height: 20),
-              // Adding buttons for more actions
-            ],
-          ),
-        );
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildEnhancedProgressIndicator(
+                      "Calories",
+                      customUser.getDailyCaloryIntake(),
+                      customUser.targetCalories?.toDouble() ?? 2000.0,
+                      Colors.green,
+                      Icons.local_fire_department,
+                    ),
+                    _buildEnhancedProgressIndicator(
+                      "Water",
+                      customUser.waterLog?.currentWaterConsumption ?? 0.0,
+                      customUser.waterLog?.targetWaterConsumption ?? 2000.0,
+                      Colors.blue,
+                      Icons.water_drop,
+                    ),
+                  ],
+                ),
+                SizedBox(height: 20),
+              ],
+            ),
+          );
+        } else {
+          return Center(child: Text("No user data found."));
+        }
       },
     );
   }
-
 // Enhanced progress indicator with animations and icons
-  Widget _buildEnhancedProgressIndicator(String title, double value, double max,
-      Color color, IconData icon) {
+  Widget _buildEnhancedProgressIndicator(
+      String title, double value, double max, Color color, IconData icon) {
+    double progressValue = max > 0 ? (value / max).clamp(0.0, 1.0) : 0.0;
+
     return Column(
       children: [
         AnimatedCircularProgressIndicator(
-          value: value / max,
+          value: progressValue,
           color: color,
         ),
         SizedBox(height: 8),
@@ -312,7 +387,6 @@ class _DiaryScreenState extends State<DiaryScreen> {
       ],
     );
   }
-
 
 
   Widget buildMealSection(
@@ -538,6 +612,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
                         );
                         updateWaterController.clear();
                       }
+                      Navigator.pushNamed(context, '/signUp');
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.greenAccent,
@@ -643,8 +718,10 @@ class AnimatedCircularProgressIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double validatedValue = value.clamp(0.0, 1.0);
+
     return TweenAnimationBuilder(
-      tween: Tween<double>(begin: 0, end: value),
+      tween: Tween<double>(begin: 0, end: validatedValue),
       duration: Duration(seconds: 2),
       builder: (context, double animatedValue, child) {
         return CircularProgressIndicator(

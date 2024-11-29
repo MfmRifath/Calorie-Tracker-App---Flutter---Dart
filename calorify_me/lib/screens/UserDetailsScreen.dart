@@ -156,8 +156,8 @@ class UserDetailScreen extends StatelessWidget {
   }
 
   Widget _buildWaterLogSection(Color cardColor, Color textColor, Color accentColor) {
-    final consumed = user.waterLog.currentWaterConsumption;
-    final target = user.waterLog.targetWaterConsumption;
+    final consumed = user.waterLog!.currentWaterConsumption;
+    final target = user.waterLog!.targetWaterConsumption;
     final progress = (consumed / target).clamp(0.0, 1.0);
 
     return _buildCard(

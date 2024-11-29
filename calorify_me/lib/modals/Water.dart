@@ -2,7 +2,9 @@ class Water {
   double targetWaterConsumption;  // The target water consumption for the user
   double currentWaterConsumption;  // The current water consumption for the user
 
-  Water({required this.targetWaterConsumption, required this.currentWaterConsumption});
+  Water({this.currentWaterConsumption = 0.0, // Default value
+  this.targetWaterConsumption = 2000.0, // Default value
+   });
 
   // Method to log water intake
   void logWaterIntake(double amount) {
@@ -18,8 +20,8 @@ class Water {
   }
   static Water fromMap(Map<String, dynamic> map) {
     return Water(
-      targetWaterConsumption: map['targetWaterConsumption'],
-      currentWaterConsumption: map['currentWaterConsumption'],
+      targetWaterConsumption: map['targetWaterConsumption']?? 0.0,
+      currentWaterConsumption: map['currentWaterConsumption' ] ?? 2000.0,
     );
   }
 }

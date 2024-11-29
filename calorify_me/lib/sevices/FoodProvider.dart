@@ -33,6 +33,21 @@ class FoodProvider with ChangeNotifier {
   Future<void> fetchDailyFoodLog() async {
     _setLoading(true);
     try {
+      final userDoc = await _firestore.collection('users').doc(userId).get();
+
+      if (userDoc.exists) {
+        final data = userDoc.data();
+        final lastReset = (data?['lastReset'] as Timestamp?)?.toDate();
+        final currentDate = DateTime.now();
+
+        // Check if 24 hours have passed since the last reset
+        if (lastReset == null || currentDate.difference(lastReset).inHours >= 24) {
+          // Reset total calories and update last reset time
+        }
+      }
+
+
+      // Fetch the daily food log after checking for reset
       final snapshot = await _firestore
           .collection('users')
           .doc(userId)
@@ -64,41 +79,16 @@ class FoodProvider with ChangeNotifier {
       await docRef.set(food.toMap());
       _dailyFoodLog.insert(0, food); // Insert at the top
       notifyListeners();
+
+      // Update total calories after logging a food item
+
     } catch (e) {
       _setError("Failed to log consumed food.");
       print("Error logging consumed food: $e");
     }
   }
 
-  Future<void> clearOldEntries() async {
-    final now = DateTime.now();
-    final batch = _firestore.batch();
 
-    try {
-      final snapshot = await _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('dailyFoodLog')
-          .get();
-
-      for (var doc in snapshot.docs) {
-        final consumedFood = ConsumedFood.fromMap(doc.data());
-        if (now.difference(consumedFood.timestamp).inHours >= 24) {
-          batch.delete(doc.reference);
-        }
-      }
-
-      await batch.commit();
-      await fetchDailyFoodLog();
-    } catch (e) {
-      _setError("Failed to clear old entries.");
-      print("Error clearing old entries: $e");
-    }
-  }
-
-  int getTotalCalories() {
-    return _dailyFoodLog.fold(0, (sum, item) => sum + item.calories);
-  }
 
   int getMealCalories(String mealType) {
     return _dailyFoodLog
@@ -175,4 +165,5 @@ class FoodProvider with ChangeNotifier {
     _errorMessage = message;
     notifyListeners();
   }
+
 }

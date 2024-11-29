@@ -50,20 +50,7 @@ class UserProvider with ChangeNotifier {
       notifyListeners(); // Ensure this runs after the build phase
     });
   }
-  Future<void> createUserInFirestore() async {
-    if (_user == null) {
-      print("Error: User object is null.");
-      return;
-    }
-    try {
-      await _firestore.collection('users').doc(_user!.id).set(
-        _user!.toMap(),
-        SetOptions(merge: true),
-      );
-    } catch (e) {
-      print("Error creating user in Firestore: $e");
-    }
-  }
+
 
   Future<void> loadUserData() async {
     if (_userId == null) {
@@ -83,7 +70,17 @@ class UserProvider with ChangeNotifier {
       print("Error loading user data: $e");
     }
   }
+  int _targetCalories = 2000;
+  int _currentCalories = 0;
 
+  int get targetCalories => _targetCalories;
+  int get currentCalories => _currentCalories;
+
+
+  void setTargetCalories(int target) {
+    _targetCalories = target;
+    notifyListeners(); // Notify UI to rebuild
+  }
   Future<void> fetchFoodLog() async {
     if (_userId == null) {
       print("Error: User ID is null.");
@@ -130,9 +127,9 @@ class UserProvider with ChangeNotifier {
       return;
     }
     try {
-      _user?.waterLog.logWaterIntake(amount);
+      _user?.waterLog!.logWaterIntake(amount);
       await _firestore.collection('users').doc(_userId).update({
-        'waterLog': _user?.waterLog.toMap(),
+        'waterLog': _user?.waterLog!.toMap(),
       });
       notifyListeners();
     } catch (e) {
@@ -140,19 +137,47 @@ class UserProvider with ChangeNotifier {
     }
   }
 
-  double getDailyCaloryIntake() {
-    return _foodLog.fold(0.0, (sum, food) => sum + food.calories);
-  }
-
   Future<void> addUser(CustomUser user) async {
-    try {
-      await _firestore.collection('users').doc(user.id).set(user.toMap());
-      _user = user;
-      notifyListeners();
-    } catch (e) {
-      print("Error adding user: $e");
+
+      // Ensure that user ID, email, and name are not null
+      if (user.id == null || user.email == null || user.name == null) {
+        throw 'User data is incomplete! Please check the input fields.';
+      }
+
+      // Proceed to add the user data to Firestore
+      await FirebaseFirestore.instance.collection('users').doc(user.id).set(user.toMap());
+      notifyListeners(); // Notify listeners of changes if necessary
+  }
+  Future<CustomUser?> findCurrentCustomUser() async {
+    final authUser = FirebaseAuth.instance.currentUser;
+
+    if (authUser != null) {
+      final authUserId = authUser.uid;
+
+      try {
+        // Access Firestore to find the corresponding CustomUser document
+        final firestore = FirebaseFirestore.instance;
+        final userDoc = await firestore.collection('users').doc(authUserId).get();
+
+        if (userDoc.exists) {
+          // Map the document data to a CustomUser object
+          final userData = userDoc.data()!;
+          return CustomUser.fromFirestore(userData, authUserId);
+        } else {
+          print("No matching CustomUser document found for User ID: $authUserId");
+          return null; // Return null if no matching document found
+        }
+      } catch (e) {
+        print("Error finding CustomUser: $e");
+        return null;
+      }
+    } else {
+      print("No user is currently logged in.");
+      return null;
     }
   }
+
+
 
   Future<bool> login(String email, String password) async {
     try {
@@ -209,16 +234,15 @@ class UserProvider with ChangeNotifier {
     }
     return 0.0;
   }
-
-  void setTargetCalories(int targetCalories) {
-    if (_user != null && _userId != null) {
-      _user!.targetCalories = targetCalories;
-      _firestore.collection('users').doc(_userId).update({
-        'targetCalories': targetCalories,
-      });
+  void setTargetWater(double targetWaterConsumption) {
+    if (_user != null && _user!.waterLog != null) {
+      _user!.waterLog!.targetWaterConsumption = targetWaterConsumption;
       notifyListeners();
-    } else {
-      print("Error setting target calories: User or User ID is null.");
+
+      // Update in Firestore
+      FirebaseFirestore.instance.collection('users').doc(_user!.id).update({
+        'waterLog.targetWaterConsumption': targetWaterConsumption,
+      });
     }
   }
   Future<void> deleteFood(String foodId) async {
@@ -268,6 +292,13 @@ class UserProvider with ChangeNotifier {
       notifyListeners();
     } catch (e) {
       print("Error deleting all food logs: $e");
+    }
+  }
+  void resetCaloriesAndWaterIntake() {
+    if (_user != null) {
+      _user!.totalCalories = 0.0;
+      _user!.totalWaterIntake = 0.0; // Reset total water intake
+      notifyListeners();
     }
   }
 }

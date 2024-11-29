@@ -1,3 +1,4 @@
+import 'package:calorify_me/screens/startingScreens/OnboardingScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animate_do/animate_do.dart';
@@ -10,7 +11,7 @@ class SplashScreen extends StatelessWidget {
     Future.delayed(Duration(seconds: 3), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => AuthWrapper()),
+        MaterialPageRoute(builder: (context) => OnboardingScreen()),
       );
     });
 

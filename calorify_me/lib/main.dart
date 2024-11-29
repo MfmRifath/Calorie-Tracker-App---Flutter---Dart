@@ -8,11 +8,60 @@ import 'package:calorify_me/sevices/FoodProvider.dart';
 import 'package:calorify_me/sevices/ThameProvider.dart';
 import 'package:calorify_me/sevices/UserProvider.dart';
 import 'package:calorify_me/sevices/WaterProvider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+
+Future<void> resetOnAppLaunch() async {
+  final userId = FirebaseAuth.instance.currentUser?.uid;
+
+  if (userId != null) {
+    final firestore = FirebaseFirestore.instance;
+    final userDoc = await firestore.collection('users').doc(userId).get();
+
+    if (userDoc.exists) {
+      final currentDate = DateTime.now();
+      final lastReset = (userDoc.data()?['lastReset'] != null)
+          ? (userDoc.data()?['lastReset'] as Timestamp).toDate()
+          : null;
+
+      if (lastReset == null || currentDate.difference(lastReset).inHours >= 24) {
+        // Get all documents in the `dailyFoodLog` collection
+        final dailyFoodLogCollection = firestore
+            .collection('users')
+            .doc(userId)
+            .collection('dailyFoodLog');
+
+        final dailyFoodLogSnapshot = await dailyFoodLogCollection.get();
+
+        // Delete each document in the `dailyFoodLog` collection
+        for (var doc in dailyFoodLogSnapshot.docs) {
+          await doc.reference.delete();
+        }
+
+        // Delete the `waterLog` field from the user's document
+        await firestore.collection('users').doc(userId).update({
+          'waterLog': FieldValue.delete(),
+          'totalCalories': 0.0,
+          'totalWaterIntake': 0.0,
+          'lastReset': currentDate,
+        });
+
+        print("Daily food log cleared, water log deleted, and values reset successfully.");
+      } else {
+        print("Reset not required. Last reset was within the specified time.");
+      }
+    } else {
+      print("User document does not exist.");
+    }
+  } else {
+    print("No user is currently logged in.");
+  }
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,10 +74,13 @@ void main() async {
       storageBucket: 'calorifyme-458e0.appspot.com',
     ),
   );
+
+  await resetOnAppLaunch();
   runApp(CalorieTrackerApp());
 }
 
 class CalorieTrackerApp extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -73,54 +125,3 @@ class CalorieTrackerApp extends StatelessWidget {
   }
 }
 
-class AuthWrapper extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<User?>(
-      future: FirebaseAuth.instance.authStateChanges().first,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return _buildLoadingScreen();
-        }
-
-        if (snapshot.hasError) {
-          return _buildErrorScreen(snapshot.error);
-        }
-
-        if (snapshot.hasData && snapshot.data != null) {
-          Provider.of<UserProvider>(context, listen: false).setUserId(snapshot.data!.uid);
-          return MainScreen();
-        } else {
-          return OnboardingScreen();
-        }
-      },
-    );
-  }
-
-  Widget _buildLoadingScreen() {
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text("Loading..."),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildErrorScreen(Object? error) {
-    return Scaffold(
-      body: Center(
-        child: Text(
-          "An error occurred: $error",
-          style: TextStyle(color: Colors.red),
-          textAlign: TextAlign.center,
-        ),
-      ),
-    );
-  }
-}

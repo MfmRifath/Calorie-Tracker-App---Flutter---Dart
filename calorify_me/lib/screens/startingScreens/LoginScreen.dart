@@ -1,20 +1,27 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:animate_do/animate_do.dart';
 import '../../sevices/UserProvider.dart';
 import '../../sevices/ThameProvider.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final TextEditingController emailController = TextEditingController();
-    final TextEditingController passwordController = TextEditingController();
-    final themeProvider = Provider.of<ThemeProvider>(context);
+  State<LoginScreen> createState() => _LoginScreenState();
+}
 
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  bool isLoading = false; // Loading state for login button
+
+  @override
+  Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.isDarkMode;
 
     return Scaffold(
@@ -95,8 +102,6 @@ class LoginScreen extends StatelessWidget {
                       // Login Button
                       _buildLoginButton(
                         context,
-                        emailController,
-                        passwordController,
                         isDarkMode,
                       ),
                       SizedBox(height: 10.0),
@@ -202,26 +207,28 @@ class LoginScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLoginButton(
-      BuildContext context,
-      TextEditingController emailController,
-      TextEditingController passwordController,
-      bool isDarkMode,
-      ) {
+  Widget _buildLoginButton(BuildContext context, bool isDarkMode) {
     return BounceInUp(
       duration: Duration(milliseconds: 1200),
       child: ElevatedButton(
-        onPressed: () async {
+        onPressed: isLoading
+            ? null // Disable button while loading
+            : () async {
+          setState(() => isLoading = true); // Show loading spinner
+
           String email = emailController.text.trim();
           String password = passwordController.text.trim();
 
           if (email.isEmpty || password.isEmpty) {
+            setState(() => isLoading = false); // Hide loading spinner
             _showSnackBar(context, 'Please fill in all fields.', Colors.orangeAccent);
             return;
           }
 
           bool loginSuccess = await Provider.of<UserProvider>(context, listen: false)
               .login(email, password);
+
+          setState(() => isLoading = false); // Hide loading spinner
 
           if (loginSuccess) {
             Navigator.pushReplacementNamed(context, '/recipeScreen');
@@ -238,7 +245,11 @@ class LoginScreen extends StatelessWidget {
           elevation: 10,
           shadowColor: Colors.greenAccent.withOpacity(0.5),
         ),
-        child: Text(
+        child: isLoading
+            ? SpinKitDancingSquare(
+          color: isDarkMode ? Colors.black : Colors.white,
+        )
+            : Text(
           'Log in',
           style: GoogleFonts.poppins(
             textStyle: TextStyle(
