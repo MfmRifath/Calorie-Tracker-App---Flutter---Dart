@@ -1,17 +1,17 @@
-import 'package:calorify_me/screens/startingScreens/OnboardingScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animate_do/animate_do.dart';
 
-import '../main.dart';
+import 'AuthWrapper.dart';
 
 class SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Future.delayed(Duration(seconds: 3), () {
+      // Navigate to AuthWrapper after the splash screen
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => OnboardingScreen()),
+        MaterialPageRoute(builder: (context) => AuthWrapper()),
       );
     });
 
@@ -28,7 +28,7 @@ class SplashScreen extends StatelessWidget {
               ),
             ),
           ),
-          // Top Decorative Circle
+          // Decorative Circle (Top)
           Positioned(
             top: -50,
             left: -50,
@@ -48,7 +48,7 @@ class SplashScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Logo Image with Animation
+                // Logo with Animation
                 BounceInDown(
                   duration: Duration(milliseconds: 1000),
                   child: Image.asset(
@@ -58,6 +58,7 @@ class SplashScreen extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 20),
+                // App Title
                 FadeInUp(
                   duration: Duration(milliseconds: 1400),
                   child: Text(
@@ -72,6 +73,7 @@ class SplashScreen extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 10),
+                // Subtitle
                 FadeInUp(
                   duration: Duration(milliseconds: 1600),
                   child: Text(
@@ -87,6 +89,7 @@ class SplashScreen extends StatelessWidget {
               ],
             ),
           ),
+          // Loading Indicator
           Positioned(
             bottom: 30,
             left: 0,
@@ -114,7 +117,7 @@ class SplashScreen extends StatelessWidget {
               ),
             ),
           ),
-          // Bottom Decorative Circle
+          // Decorative Circle (Bottom)
           Positioned(
             bottom: -60,
             right: -60,

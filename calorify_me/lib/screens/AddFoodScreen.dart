@@ -153,7 +153,7 @@ class _AddFoodDialogState extends State<AddFoodDialog> {
                 SizedBox(height: 20),
                 _buildTextField(
                   controller: descriptionController,
-                  labelText: 'Food Name',
+                  labelText: 'Food Description',
                   icon: Icons.description,
                 ),
                 _buildTextField(

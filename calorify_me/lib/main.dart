@@ -111,6 +111,7 @@ class CalorieTrackerApp extends StatelessWidget {
         builder: (context, themeProvider, child) {
           return MaterialApp(
             title: 'Calorie Tracker',
+            debugShowCheckedModeBanner: false,
             theme: themeProvider.getTheme(),
             home: SplashScreen(),
             routes: {

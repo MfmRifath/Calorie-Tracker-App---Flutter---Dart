@@ -100,7 +100,6 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
       ),
       title: Row(
         children: [
-          // Add your logo here
           SizedBox(width: screenWidth * 0.02),
           if (user != null && user.profileImageUrl != null)
             CircleAvatar(
@@ -129,7 +128,56 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
           ),
         ],
       ),
+      actions: [
+        IconButton(
+          icon: Icon(Icons.logout, color: Colors.white),
+          onPressed: () {
+            _showLogoutConfirmationDialog();
+          },
+        ),
+      ],
     );
+  }
+
+  void _showLogoutConfirmationDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Logout"),
+          content: Text("Are you sure you want to logout?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text("Cancel", style: TextStyle(color: Colors.grey)),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                _logout(); // Call the logout function
+              },
+              child: Text("Logout", style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _logout() async {
+    try {
+      await FirebaseFirestore.instance.terminate(); // Logout from Firestore
+      await FirebaseFirestore.instance.clearPersistence(); // Clear Firestore cache
+      await Provider.of<UserProvider>(context, listen: false).logout(); // Logout user from the provider
+      Navigator.of(context).pushReplacementNamed('/login'); // Navigate to login screen
+    } catch (e) {
+      print("Logout error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to logout. Please try again.")),
+      );
+    }
   }
   Widget buildSearchBar(
       bool isDarkMode, Color accentColor, double screenWidth, double screenHeight) {

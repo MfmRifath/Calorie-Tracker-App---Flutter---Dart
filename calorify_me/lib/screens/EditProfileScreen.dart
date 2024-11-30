@@ -28,6 +28,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late int _targetCalories;
   File? _image; // For picked image
   final ImagePicker _picker = ImagePicker();
+  bool _isLoading = false; // Loading state
 
   @override
   void initState() {
@@ -81,147 +82,167 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ),
       ),
       backgroundColor: isDarkMode ? Colors.black : Colors.white,
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                GestureDetector(
-                  onTap: _pickImage,
-                  child: CircleAvatar(
-                    radius: 50,
-                    backgroundImage: _image != null
-                        ? FileImage(_image!)
-                        : (widget.user.profileImageUrl != null
-                        ? NetworkImage(widget.user.profileImageUrl!)
-                        : AssetImage('assets/profile_placeholder.png')) as ImageProvider,
-                    backgroundColor: isDarkMode ? Colors.grey[800] : Colors.grey[200],
-                  ),
-                ),
-                SizedBox(height: 12),
-                Text(
-                  'Tap to change profile picture',
-                  style: GoogleFonts.poppins(
-                    fontSize: 12.0,
-                    color: isDarkMode ? Colors.white54 : Colors.grey,
-                  ),
-                ),
-                SizedBox(height: 20),
-                _buildTextFormField(
-                  label: 'Name',
-                  initialValue: _name,
-                  onSaved: (value) {
-                    _name = value ?? _name;
-                  },
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Name cannot be empty';
-                    }
-                    return null;
-                  },
-                  isDarkMode: isDarkMode,
-                ),
-                SizedBox(height: 10),
-                _buildTextFormField(
-                  label: 'Email',
-                  initialValue: _email,
-                  onSaved: (value) {
-                    _email = value ?? _email;
-                  },
-                  validator: (value) {
-                    if (value == null || value.isEmpty || !value.contains('@')) {
-                      return 'Enter a valid email';
-                    }
-                    return null;
-                  },
-                  isDarkMode: isDarkMode,
-                ),
-                SizedBox(height: 10),
-                _buildNumberFormField(
-                  label: 'Age',
-                  initialValue: _age.toString(),
-                  onSaved: (value) {
-                    _age = int.parse(value!);
-                  },
-                  isDarkMode: isDarkMode,
-                ),
-                SizedBox(height: 10),
-                _buildNumberFormField(
-                  label: 'Weight (kg)',
-                  initialValue: _weight.toString(),
-                  onSaved: (value) {
-                    _weight = double.parse(value!);
-                  },
-                  isDarkMode: isDarkMode,
-                ),
-                SizedBox(height: 10),
-                _buildNumberFormField(
-                  label: 'Height (cm)',
-                  initialValue: _height.toString(),
-                  onSaved: (value) {
-                    _height = double.parse(value!);
-                  },
-                  isDarkMode: isDarkMode,
-                ),
-                SizedBox(height: 10),
-                _buildNumberFormField(
-                  label: 'Target Calories',
-                  initialValue: _targetCalories.toString(),
-                  onSaved: (value) {
-                    _targetCalories = int.parse(value!);
-                  },
-                  isDarkMode: isDarkMode,
-                ),
-                SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
-                      _formKey.currentState!.save();
-                      widget.user.name = _name;
-                      widget.user.email = _email;
-                      widget.user.age = _age;
-                      widget.user.weight = _weight;
-                      widget.user.height = _height;
-                      widget.user.targetCalories = _targetCalories;
-                      widget.user.role = widget.user.role;
-                      widget.user.waterLog = widget.user.waterLog;
-                      widget.user.consumedFoodLog = widget.user.consumedFoodLog;
-                      widget.user.foodLog = widget.user.foodLog;
-
-                      if (_image != null) {
-                        String? imageUrl = await _uploadImage(_image!);
-                        if (imageUrl != null) {
-                          widget.user.profileImageUrl = imageUrl;
+      body: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Form(
+              key: _formKey,
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    GestureDetector(
+                      onTap: _pickImage,
+                      child: CircleAvatar(
+                        radius: 50,
+                        backgroundImage: _image != null
+                            ? FileImage(_image!)
+                            : (widget.user.profileImageUrl != null
+                            ? NetworkImage(widget.user.profileImageUrl!)
+                            : AssetImage('assets/profile_placeholder.png')) as ImageProvider,
+                        backgroundColor: isDarkMode ? Colors.grey[800] : Colors.grey[200],
+                      ),
+                    ),
+                    SizedBox(height: 12),
+                    Text(
+                      'Tap to change profile picture',
+                      style: GoogleFonts.poppins(
+                        fontSize: 12.0,
+                        color: isDarkMode ? Colors.white54 : Colors.grey,
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    _buildTextFormField(
+                      label: 'Name',
+                      initialValue: _name,
+                      onSaved: (value) {
+                        _name = value ?? _name;
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Name cannot be empty';
                         }
-                      }
+                        return null;
+                      },
+                      isDarkMode: isDarkMode,
+                    ),
+                    SizedBox(height: 10),
+                    _buildTextFormField(
+                      label: 'Email',
+                      initialValue: _email,
+                      onSaved: (value) {
+                        _email = value ?? _email;
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty || !value.contains('@')) {
+                          return 'Enter a valid email';
+                        }
+                        return null;
+                      },
+                      isDarkMode: isDarkMode,
+                    ),
+                    SizedBox(height: 10),
+                    _buildNumberFormField(
+                      label: 'Age',
+                      initialValue: _age.toString(),
+                      onSaved: (value) {
+                        _age = int.parse(value!);
+                      },
+                      isDarkMode: isDarkMode,
+                    ),
+                    SizedBox(height: 10),
+                    _buildNumberFormField(
+                      label: 'Weight (kg)',
+                      initialValue: _weight.toString(),
+                      onSaved: (value) {
+                        _weight = double.parse(value!);
+                      },
+                      isDarkMode: isDarkMode,
+                    ),
+                    SizedBox(height: 10),
+                    _buildNumberFormField(
+                      label: 'Height (cm)',
+                      initialValue: _height.toString(),
+                      onSaved: (value) {
+                        _height = double.parse(value!);
+                      },
+                      isDarkMode: isDarkMode,
+                    ),
+                    SizedBox(height: 10),
+                    _buildNumberFormField(
+                      label: 'Target Calories',
+                      initialValue: _targetCalories.toString(),
+                      onSaved: (value) {
+                        _targetCalories = int.parse(value!);
+                      },
+                      isDarkMode: isDarkMode,
+                    ),
+                    SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: _isLoading
+                          ? null
+                          : () async {
+                        if (_formKey.currentState!.validate()) {
+                          setState(() {
+                            _isLoading = true;
+                          });
+                          _formKey.currentState!.save();
+                          widget.user.name = _name;
+                          widget.user.email = _email;
+                          widget.user.age = _age;
+                          widget.user.weight = _weight;
+                          widget.user.height = _height;
+                          widget.user.targetCalories = _targetCalories;
 
-                      await userProvider.addUser(widget.user);
-                      Navigator.pop(context);
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isDarkMode ? Colors.greenAccent : Colors.teal,
-                    padding: EdgeInsets.symmetric(vertical: 14, horizontal: 32),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                          if (_image != null) {
+                            String? imageUrl = await _uploadImage(_image!);
+                            if (imageUrl != null) {
+                              widget.user.profileImageUrl = imageUrl;
+                            }
+                          }
+
+                          await userProvider.addUser(widget.user);
+                          setState(() {
+                            _isLoading = false;
+                          });
+                          Navigator.pop(context);
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isDarkMode ? Colors.greenAccent : Colors.teal,
+                        padding: EdgeInsets.symmetric(vertical: 14, horizontal: 32),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        'Save Changes',
+                        style: GoogleFonts.poppins(
+                          color: isDarkMode ? Colors.black : Colors.white,
+                        ),
+                      ),
                     ),
-                  ),
-                  child: Text(
-                    'Save Changes',
-                    style: GoogleFonts.poppins(
-                      color: isDarkMode ? Colors.black : Colors.white,
-                    ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
-        ),
+          if (_isLoading)
+            Container(
+              color: Colors.black54,
+              child: Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    isDarkMode ? Colors.greenAccent : Colors.teal,
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
+}
 
   Widget _buildTextFormField({
     required String label,
@@ -285,4 +306,3 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       ),
     );
   }
-}

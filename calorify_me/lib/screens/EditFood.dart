@@ -17,6 +17,7 @@ class EditFoodDialog extends StatefulWidget {
 
 class _EditFoodDialogState extends State<EditFoodDialog> {
   final TextEditingController _foodNameController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _caloriesController = TextEditingController();
   final TextEditingController _proteinController = TextEditingController();
   final TextEditingController _fatController = TextEditingController();
@@ -31,6 +32,7 @@ class _EditFoodDialogState extends State<EditFoodDialog> {
     _caloriesController.text = widget.food.calories.toString();
     _proteinController.text = widget.food.protein.toString();
     _fatController.text = widget.food.fat.toString();
+    _descriptionController.text = widget.food.description!;
   }
 
   Future<void> _pickImage() async {
@@ -92,6 +94,7 @@ class _EditFoodDialogState extends State<EditFoodDialog> {
       'protein': double.parse(_proteinController.text.trim()),
       'fat': double.parse(_fatController.text.trim()),
       'imageUrl': updatedImageUrl,
+      'description': _descriptionController.text,
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -170,6 +173,8 @@ class _EditFoodDialogState extends State<EditFoodDialog> {
                 ),
                 SizedBox(height: 30),
                 _buildTextField(_foodNameController, 'Food Name', Icons.fastfood),
+                SizedBox(height: 30),
+                _buildTextField(_descriptionController, 'Food Description', Icons.description),
                 SizedBox(height: 15),
                 _buildTextField(_caloriesController, 'Calories', Icons.local_fire_department, isNumber: true),
                 SizedBox(height: 15),

@@ -13,10 +13,16 @@ class UserProvider with ChangeNotifier {
   CustomUser? _user;
   List<Food> _foodLog = [];
   String? _userId;
+  CustomUser? _currentUser; // Stores the current user's data
+
+
+  CustomUser? get currentUser => _currentUser; // Getter for the current user
+  String? get userId => _userId;
+
+
 
   List<Food> get foodLog => _foodLog;
   CustomUser? get user => _user;
-  String? get userId => _userId;
 
   UserProvider();
 
@@ -51,6 +57,33 @@ class UserProvider with ChangeNotifier {
     });
   }
 
+  Future<void> loadCurrentUserData() async {
+    if (_userId == null) {
+      print("Error: User ID is null.");
+      return;
+    }
+
+    try {
+      // Fetch the user's document from Firestore
+      final userDoc = await _firestore.collection('users').doc(_userId).get();
+
+      if (userDoc.exists) {
+        print("User data retrieved: ${userDoc.data()}");
+
+        // Map Firestore data to the CustomUser object
+        _currentUser = CustomUser.fromFirestore(
+          userDoc.data() as Map<String, dynamic>,
+          _userId!,
+        ) as CustomUser?;
+
+        notifyListeners(); // Notify listeners of changes
+      } else {
+        print("No user document found for ID: $_userId");
+      }
+    } catch (e) {
+      print("Error loading user data: $e");
+    }
+  }
 
   Future<void> loadUserData() async {
     if (_userId == null) {

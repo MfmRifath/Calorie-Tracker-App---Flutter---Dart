@@ -612,7 +612,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
                         );
                         updateWaterController.clear();
                       }
-                      Navigator.pushNamed(context, '/signUp');
+
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.greenAccent,

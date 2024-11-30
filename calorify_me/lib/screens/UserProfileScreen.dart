@@ -234,7 +234,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             ),
             SizedBox(height: 16),
             _buildDetailRow('Name:', user.name, theme, Colors.white),
-            _buildDetailRow('Email:', user.email, theme, Colors.white70),
             _buildDetailRow('Age:', '${user.age}', theme, Colors.white),
             _buildDetailRow('Weight:', '${user.weight} kg', theme, Colors.white),
             _buildDetailRow('Height:', '${user.height} m', theme, Colors.white70),
