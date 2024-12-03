@@ -7,7 +7,7 @@ import 'AuthWrapper.dart';
 class SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    Future.delayed(Duration(seconds: 3), () {
+    Future.delayed(Duration(seconds: 5), () {
       // Navigate to AuthWrapper after the splash screen
       Navigator.pushReplacement(
         context,

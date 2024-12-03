@@ -187,7 +187,7 @@ class ReportsScreen extends StatelessWidget {
   }
 
   Widget _buildAnimatedNutrientBreakdownChart(FoodProvider foodProvider, Color primaryColor) {
-    final carbs = foodProvider.dailyFoodLog.fold(0.0, (sum, food) => sum + food.calories);
+    final carbs = foodProvider.dailyFoodLog.fold(0.0, (sum, food) => sum + food.carbs);
     final protein = foodProvider.dailyFoodLog.fold(0.0, (sum, food) => sum + food.protein);
     final fats = foodProvider.dailyFoodLog.fold(0.0, (sum, food) => sum + food.fat);
 

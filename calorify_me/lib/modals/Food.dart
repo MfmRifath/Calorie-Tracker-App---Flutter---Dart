@@ -6,7 +6,8 @@ class Food {
   double protein;
   double fat;
   double foodWeight;
-  String? imageUrl; // Optional field for the food image
+  String? imageUrl;
+  double carbs; // Optional field for the food image
 
   Food({
     this.id,
@@ -15,6 +16,7 @@ class Food {
     required this.protein,
     required this.fat,
     required this.foodWeight,
+    required this.carbs,
     this.description,
     this.imageUrl,
   });
@@ -28,7 +30,8 @@ class Food {
       'fat': fat,
       'foodWeight': foodWeight,
       'imageUrl': imageUrl,
-      'description':description// Include the image URL in the map
+      'carbs': carbs,
+      'description': description, // Include the description in the map
     };
   }
 
@@ -38,11 +41,25 @@ class Food {
       id: id, // Assign Firestore document ID
       foodName: map['foodName'] ?? '',
       calories: map['calories'] ?? 0,
-      protein: (map['protein'] ?? 0.0).toDouble(),
-      fat: (map['fat'] ?? 0.0).toDouble(),
-      foodWeight: (map['foodWeight'] ?? 0.0).toDouble(),
-      imageUrl: map['imageUrl'],
-      description: map['description'] ?? "",
+      protein: _convertToDouble(map['protein']),
+      fat: _convertToDouble(map['fat']),
+      foodWeight: _convertToDouble(map['foodWeight']),
+      imageUrl: map['imageUrl'] ?? '',
+      description: map['description'] ?? '',
+      carbs: _convertToDouble(map['carbs']),
     );
+  }
+
+  // Enhanced method to handle int, double, and String conversions to double
+  static double _convertToDouble(dynamic value) {
+    if (value is int) {
+      return value.toDouble(); // Convert int to double
+    } else if (value is double) {
+      return value;
+    } else if (value is String) {
+      return double.tryParse(value) ?? 0.0; // Attempt to parse String to double
+    } else {
+      return 0.0; // Default value in case of null or unexpected type
+    }
   }
 }

@@ -2,6 +2,7 @@ class ConsumedFood {
   final String foodName;
   final int calories;
   final double protein;
+  final double carbs;
   final double fat;
   final double foodWeight;
   final String mealType; // Breakfast, Lunch, Dinner, Snacks
@@ -15,6 +16,7 @@ class ConsumedFood {
     required this.foodWeight,
     required this.mealType,
     required this.timestamp,
+    required this.carbs
   });
 
   /// Convert to map for Firestore
@@ -27,6 +29,7 @@ class ConsumedFood {
       'foodWeight': foodWeight,
       'mealType': mealType,
       'timestamp': timestamp.toIso8601String(),
+      'carbs': carbs,
     };
   }
 
@@ -40,8 +43,13 @@ class ConsumedFood {
       foodWeight: (map['foodWeight'] ?? 0).toDouble(),
       mealType: map['mealType'] ?? 'Unknown Meal',
       timestamp: DateTime.tryParse(map['timestamp'] ?? '') ?? DateTime.now(),
+      carbs: map['carbs']
     );
   }
+
+
+
+
 
   /// Create a copy with updated fields
   ConsumedFood copyWith({
@@ -49,6 +57,7 @@ class ConsumedFood {
     int? calories,
     double? protein,
     double? fat,
+    double? carbs,
     double? foodWeight,
     String? mealType,
     DateTime? timestamp,
@@ -61,6 +70,7 @@ class ConsumedFood {
       foodWeight: foodWeight ?? this.foodWeight,
       mealType: mealType ?? this.mealType,
       timestamp: timestamp ?? this.timestamp,
+      carbs: carbs ?? this.carbs
     );
   }
 }

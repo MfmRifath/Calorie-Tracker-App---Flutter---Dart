@@ -36,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
 
     return SafeArea(
       child: Scaffold(
-        backgroundColor: isDarkMode ? Colors.black : Colors.white,
+        backgroundColor: isDarkMode ? Colors.black : Color(0xffe6ffe6),
         appBar: buildAppBarWithGradient(isDarkMode, accentColor, user, screenWidth),
         body: Column(
           children: [
@@ -89,6 +89,8 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
   AppBar buildAppBarWithGradient(
       bool isDarkMode, Color accentColor, CustomUser? user, double screenWidth) {
     return AppBar(
+      elevation: 0,
+      backgroundColor: Colors.transparent,
       flexibleSpace: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -98,35 +100,30 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
           ),
         ),
       ),
-      title: Row(
-        children: [
-          SizedBox(width: screenWidth * 0.02),
-          if (user != null && user.profileImageUrl != null)
-            CircleAvatar(
-              radius: screenWidth * 0.05,
-              backgroundImage: CachedNetworkImageProvider(user.profileImageUrl!),
-            )
-          else
-            CircleAvatar(
-              radius: screenWidth * 0.05,
-              backgroundColor: Colors.grey[300],
-              child: Icon(Icons.person, color: Colors.white),
-            ),
-          SizedBox(width: screenWidth * 0.02),
-          Expanded(
-            child: Text(
-              user == null ? "Welcome!" : "Hi!, ${user.name}!",
-              style: GoogleFonts.poppins(
-                textStyle: TextStyle(
-                  color: Colors.white,
-                  fontSize: screenWidth * 0.045,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              overflow: TextOverflow.ellipsis,
+      leading: Padding(
+        padding: EdgeInsets.only(left: screenWidth * 0.04),
+        child: user != null && user.profileImageUrl != null
+            ? CircleAvatar(
+          radius: screenWidth * 0.02,
+          backgroundImage: CachedNetworkImageProvider(user.profileImageUrl!),
+        )
+            : CircleAvatar(
+          radius: screenWidth * 0.02,
+          backgroundColor: Colors.grey[300],
+          child: Icon(Icons.person, color: Colors.white),
+        ),
+      ),
+      title: Center(
+        child: Text(
+          "CalorifyMe",
+          style: GoogleFonts.poppins(
+            textStyle: TextStyle(
+              color: Colors.white,
+              fontSize: screenWidth * 0.06,
+              fontWeight: FontWeight.bold,
             ),
           ),
-        ],
+        ),
       ),
       actions: [
         IconButton(
@@ -138,7 +135,6 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
       ],
     );
   }
-
   void _showLogoutConfirmationDialog() {
     showDialog(
       context: context,

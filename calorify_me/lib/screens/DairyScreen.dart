@@ -59,92 +59,30 @@ class _DiaryScreenState extends State<DiaryScreen> {
     final isDarkMode = themeProvider.isDarkMode;
 
     return Scaffold(
-      backgroundColor: isDarkMode ? Colors.black : Colors.white,
+      backgroundColor: isDarkMode ? Colors.black : Color(0xffe6ffe6),
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(100), // Increased height for visual prominence
+        preferredSize: Size.fromHeight(45), // Increased height for visual prominence
         child: Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: isDarkMode
-                  ? [Colors.greenAccent.shade400, Colors.black]
-                  : [Colors.green.shade400, Colors.green.shade700],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.vertical(
-              bottom: Radius.circular(30), // Smoothly rounded bottom corners
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.25),
-                offset: Offset(0, 6),
-                blurRadius: 12,
-              ),
-            ],
           ),
           child: SafeArea(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Logo Section with Ripple Effect
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: RadialGradient(
-                          colors: [
-                            Colors.white.withOpacity(0.3),
-                            Colors.white.withOpacity(0.1),
-                            Colors.transparent,
-                          ],
-                          center: Alignment.center,
-                          radius: 1.5,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: isDarkMode
-                              ? Colors.greenAccent.withOpacity(0.8)
-                              : Colors.white.withOpacity(0.7),
-                          width: 3,
-                        ),
-                      ),
-                      child: Center(
-                        child: Image.asset(
-                          'assets/images/logo.png', // Replace with the path to your app logo
-                          height: 40,
-                          width: 40,
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+
                 SizedBox(width: 16),
                 // Title Section
-                Text(
-                  "Diary",
-                  style: TextStyle(
-                    fontFamily: 'Pacifico', // Elegant font for a premium feel
-                    fontSize: 28,
-                    fontWeight: FontWeight.w600,
-                    color: isDarkMode ? Colors.greenAccent : Colors.white,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withOpacity(0.2),
-                        offset: Offset(3, 3),
-                        blurRadius: 6,
-                      ),
-                    ],
+                Center(
+                  child: Text(
+                    "Diary",
+                    style: TextStyle(
+                      fontFamily: 'Pacifico', // Elegant font for a premium feel
+                      fontSize: 28,
+                      fontWeight: FontWeight.w600,
+                      color: isDarkMode ? Colors.greenAccent : Colors.green,
+
+                    ),
                   ),
                 ),
               ],
@@ -306,43 +244,205 @@ class _DiaryScreenState extends State<DiaryScreen> {
           );
         } else if (snapshot.hasData) {
           final customUser = snapshot.data!;
+          final remainingCalories = (customUser.targetCalories ?? 2000) -
+              customUser.getDailyCaloryIntake();
+          final carbs = customUser.getDailyCarbs();
+          final fats = customUser.getDailyFats();
+          final protein = customUser.getDailyProtein();
+          final calorieProgressValue = (customUser.getDailyCaloryIntake() /
+              (customUser.targetCalories ?? 2000))
+              .clamp(0.0, 1.0);
 
           return _buildAnimatedCard(
             isDarkMode: isDarkMode,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _sectionTitle('Your Daily Summary', isDarkMode),
-                SizedBox(height: 20),
-                Text(
-                  "Keep up the great work! Stay hydrated and eat healthy.",
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontStyle: FontStyle.italic,
-                    color: isDarkMode ? Colors.grey[300] : Colors.grey[600],
-                  ),
-                ),
-                SizedBox(height: 20),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    _buildEnhancedProgressIndicator(
-                      "Calories",
-                      customUser.getDailyCaloryIntake(),
-                      customUser.targetCalories?.toDouble() ?? 2000.0,
-                      Colors.green,
-                      Icons.local_fire_department,
+                    // Circular Progress Indicator for Calories
+                    Expanded(
+                      flex: 2,
+                      child: Column(
+                        children: [
+                          Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              SizedBox(
+                                height: 140,
+                                width: 140,
+                                child: CircularProgressIndicator(
+                                  value: calorieProgressValue,
+                                  backgroundColor: isDarkMode
+                                      ? Colors.grey[800]
+                                      : Colors.grey[300],
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    isDarkMode
+                                        ? Colors.greenAccent
+                                        : Colors.green,
+                                  ),
+                                  strokeWidth: 12,
+                                ),
+                              ),
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    "${remainingCalories > 0 ? remainingCalories : 0}",
+                                    style: TextStyle(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.bold,
+                                      color: isDarkMode
+                                          ? Colors.greenAccent
+                                          : Colors.green[800],
+                                    ),
+                                  ),
+                                  Text(
+                                    "Remaining",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: isDarkMode
+                                          ? Colors.grey[300]
+                                          : Colors.grey[600],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 10),
+                          Text(
+                            "Calories",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: isDarkMode
+                                  ? Colors.greenAccent
+                                  : Colors.green[700],
+                            ),
+                          ),
+                          Text(
+                            "${customUser.getDailyCaloryIntake()} / ${customUser.targetCalories ?? 2000}",
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: isDarkMode
+                                  ? Colors.grey[300]
+                                  : Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    _buildEnhancedProgressIndicator(
-                      "Water",
-                      customUser.waterLog?.currentWaterConsumption ?? 0.0,
-                      customUser.waterLog?.targetWaterConsumption ?? 2000.0,
-                      Colors.blue,
-                      Icons.water_drop,
+                    SizedBox(width: 30),
+                    // Macronutrient Rows
+                    Expanded(
+                      flex: 2,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _macroNutrientRow(
+                            "Carbs",
+                            carbs,
+                            isDarkMode,
+                            Colors.orangeAccent,
+                            Icons.rice_bowl,
+                          ),
+                          SizedBox(height: 10),
+                          _macroNutrientRow(
+                            "Fats",
+                            fats,
+                            isDarkMode,
+                            Colors.blueAccent,
+                            Icons.water_drop,
+                          ),
+                          SizedBox(height: 10),
+                          _macroNutrientRow(
+                            "Protein",
+                            protein,
+                            isDarkMode,
+                            Colors.purpleAccent,
+                            Icons.egg,
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
                 SizedBox(height: 20),
+                // Water Intake Progress Bar
+                Consumer<WaterProvider>(
+                  builder: (context, waterProvider, child) {
+                    final targetWater = waterProvider.waterLog.targetWaterConsumption;
+                    final waterIntake = waterProvider.waterLog.currentWaterConsumption;
+                    final remainingWater =
+                    (targetWater - waterIntake).clamp(0.0, targetWater);
+                    final waterProgressValue =
+                    (waterIntake / targetWater).clamp(0.0, 1.0);
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Water Intake",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: isDarkMode
+                                ? Colors.blueAccent
+                                : Colors.blue[700],
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        Stack(
+                          children: [
+                            Container(
+                              height: 20,
+                              decoration: BoxDecoration(
+                                color: isDarkMode
+                                    ? Colors.grey[800]
+                                    : Colors.grey[300],
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            Container(
+                              height: 20,
+                              width: MediaQuery.of(context).size.width *
+                                  waterProgressValue,
+                              decoration: BoxDecoration(
+                                color: Colors.blueAccent,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Consumed: ${waterIntake.toInt()} ml",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: isDarkMode
+                                    ? Colors.grey[300]
+                                    : Colors.grey[700],
+                              ),
+                            ),
+                            Text(
+                              "Remaining: ${remainingWater.toInt()} ml",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: isDarkMode
+                                    ? Colors.blueAccent
+                                    : Colors.blue[800],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    );
+                  },
+                ),
               ],
             ),
           );
@@ -352,25 +452,29 @@ class _DiaryScreenState extends State<DiaryScreen> {
       },
     );
   }
-// Enhanced progress indicator with animations and icons
-  Widget _buildEnhancedProgressIndicator(
-      String title, double value, double max, Color color, IconData icon) {
-    double progressValue = max > 0 ? (value / max).clamp(0.0, 1.0) : 0.0;
-
-    return Column(
+  Widget _macroNutrientRow(
+      String label,
+      double value,
+      bool isDarkMode,
+      Color color,
+      IconData icon,
+      ) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        AnimatedCircularProgressIndicator(
-          value: progressValue,
-          color: color,
-        ),
-        SizedBox(height: 8),
         Row(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: color, size: 18),
-            SizedBox(width: 5),
+            FadeInLeft(
+              duration: Duration(milliseconds: 500),
+              child: Icon(
+                icon,
+                size: 20,
+                color: color,
+              ),
+            ),
+            SizedBox(width: 10),
             Text(
-              title,
+              label,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -379,15 +483,17 @@ class _DiaryScreenState extends State<DiaryScreen> {
             ),
           ],
         ),
-        SizedBox(height: 4),
         Text(
-          "${value.toInt()} / ${max.toInt()}",
-          style: TextStyle(fontSize: 12, color: Colors.grey),
+          "${value.toInt()} g",
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            color: isDarkMode ? Colors.white : Colors.grey[800],
+          ),
         ),
       ],
     );
   }
-
 
   Widget buildMealSection(
       BuildContext context, String mealType, bool isDarkMode) {
@@ -539,28 +645,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _sectionTitle('Water Intake', isDarkMode),
-              SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Remaining:",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: isDarkMode ? Colors.white : Colors.grey.shade800,
-                    ),
-                  ),
-                  Text(
-                    "${remainingWater.toStringAsFixed(1)} ml",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: isDarkMode ? Colors.greenAccent : Colors.green[700],
-                    ),
-                  ),
-                ],
-              ),
+
               SizedBox(height: 10),
               TweenAnimationBuilder<double>(
                 tween: Tween<double>(

@@ -1,4 +1,9 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:csv/csv.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart'; // For animations
@@ -8,7 +13,61 @@ import '../modals/Food.dart';
 import '../sevices/ThameProvider.dart';
 import 'AddFoodScreen.dart';
 import 'EditFood.dart';
+Future<void> importCsv(BuildContext context) async {
+  try {
+    // Pick a CSV file
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['csv'],
+    );
 
+    if (result != null) {
+      final file = File(result.files.single.path!);
+      final input = file.openRead();
+      final fields = await input
+          .transform(utf8.decoder)
+          .transform(CsvToListConverter())
+          .toList();
+
+      // Assuming the first row contains headers
+      List<String> headers = fields[0].cast<String>();
+
+      // Skip the headers and process rows
+      for (int i = 1; i < fields.length; i++) {
+        Map<String, dynamic> data = {};
+        for (int j = 0; j < headers.length; j++) {
+          data[headers[j]] = fields[i][j];
+        }
+
+        // Upload data to Firestore
+        await FirebaseFirestore.instance.collection('Food').add(data);
+      }
+
+      // Success Message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('CSV data imported successfully.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } else {
+      // File picker canceled
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('File selection canceled.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Failed to import CSV: $e'),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+}
 class FoodManagementScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -29,6 +88,14 @@ class FoodManagementScreen extends StatelessWidget {
         backgroundColor: isDarkMode ? Colors.black : Colors.teal,
         centerTitle: true,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.upload_file, color: isDarkMode ? Colors.greenAccent : Colors.white),
+            onPressed: () {
+              importCsv(context);
+            },
+          ),
+        ],
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance.collection('Food').snapshots(),

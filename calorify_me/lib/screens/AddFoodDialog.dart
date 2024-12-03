@@ -266,6 +266,7 @@ class _AddFoodDialogState extends State<AddFoodDialog> {
         foodWeight: quantity,
         mealType: widget.mealType,
         timestamp: DateTime.now(),
+        carbs: selectedFood!.carbs
       );
 
       await Provider.of<FoodProvider>(context, listen: false)

@@ -21,6 +21,7 @@ class _EditFoodDialogState extends State<EditFoodDialog> {
   final TextEditingController _caloriesController = TextEditingController();
   final TextEditingController _proteinController = TextEditingController();
   final TextEditingController _fatController = TextEditingController();
+  final TextEditingController _carbsController = TextEditingController();
 
   File? _selectedImage;
   bool _isUploading = false;
@@ -33,6 +34,7 @@ class _EditFoodDialogState extends State<EditFoodDialog> {
     _proteinController.text = widget.food.protein.toString();
     _fatController.text = widget.food.fat.toString();
     _descriptionController.text = widget.food.description!;
+    _carbsController.text = widget.food.carbs.toString();
   }
 
   Future<void> _pickImage() async {
@@ -95,6 +97,7 @@ class _EditFoodDialogState extends State<EditFoodDialog> {
       'fat': double.parse(_fatController.text.trim()),
       'imageUrl': updatedImageUrl,
       'description': _descriptionController.text,
+      'carbs':_carbsController.text,
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -179,6 +182,9 @@ class _EditFoodDialogState extends State<EditFoodDialog> {
                 _buildTextField(_caloriesController, 'Calories', Icons.local_fire_department, isNumber: true),
                 SizedBox(height: 15),
                 _buildTextField(_proteinController, 'Protein (g)', Icons.fitness_center, isNumber: true),
+                SizedBox(height: 15),
+                _buildTextField(_proteinController, 'Carbs (g)', Icons.rice_bowl, isNumber: true),
+
                 SizedBox(height: 15),
                 _buildTextField(_fatController, 'Fat (g)', Icons.bubble_chart, isNumber: true),
                 SizedBox(height: 30),

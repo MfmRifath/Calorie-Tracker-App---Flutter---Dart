@@ -20,6 +20,8 @@ class _AddFoodDialogState extends State<AddFoodDialog> {
   final TextEditingController fatController = TextEditingController();
   final TextEditingController foodWeightController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
+  final TextEditingController carbsController = TextEditingController();
+
 
   File? _imageFile;
   final ImagePicker _picker = ImagePicker();
@@ -61,6 +63,7 @@ class _AddFoodDialogState extends State<AddFoodDialog> {
         foodWeight: double.parse(foodWeightController.text),
         description: descriptionController.text,
         imageUrl: imageUrl,
+        carbs: double.parse(carbsController.text),
       );
 
       await FirebaseFirestore.instance.collection('Food').add(food.toMap());
@@ -168,6 +171,13 @@ class _AddFoodDialogState extends State<AddFoodDialog> {
                   icon: Icons.restaurant_menu,
                   keyboardType: TextInputType.number,
                 ),
+                _buildTextField(
+              controller: carbsController,
+              labelText: 'Carbs (g)',
+              icon: Icons.restaurant_menu,
+              keyboardType: TextInputType.number,
+            ),
+
                 _buildTextField(
                   controller: fatController,
                   labelText: 'Fat (g)',

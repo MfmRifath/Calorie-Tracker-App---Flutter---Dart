@@ -58,7 +58,20 @@ class CustomUser {
   double getDailyCaloryIntake() {
     return consumedFoodLog!.fold(0, (total, food) => total + food.calories);
   }
+// Calculate total daily carbs
+  double getDailyCarbs() {
+    return consumedFoodLog?.fold(0.0, (total, food) => total! + (food.carbs ?? 0.0)) ?? 0.0;
+  }
 
+  // Calculate total daily fats
+  double getDailyFats() {
+    return consumedFoodLog?.fold(0.0, (total, food) => total! + (food.fat ?? 0.0)) ?? 0.0;
+  }
+
+  // Calculate total daily protein
+  double getDailyProtein() {
+    return consumedFoodLog?.fold(0.0, (total, food) => total! + (food.protein ?? 0.0)) ?? 0.0;
+  }
   // Convert CustomUser to a map for Firestore
   Map<String, dynamic> toMap() {
     return {

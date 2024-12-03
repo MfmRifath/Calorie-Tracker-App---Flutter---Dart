@@ -623,6 +623,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     final TextEditingController proteinController = TextEditingController();
     final TextEditingController fatController = TextEditingController();
     final TextEditingController foodWeightController = TextEditingController();
+    final TextEditingController carbsController = TextEditingController();
 
 
     final _formKey = GlobalKey<FormState>();
@@ -688,6 +689,16 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   ),
                   SizedBox(height: 10),
                   _buildTextField(
+                    controller: carbsController,
+                    label: 'Carbs',
+                    hint: 'Enter Carbs (g)',
+                    theme: theme,
+                    keyboardType: TextInputType.number,
+                    validator: (value) =>
+                    value!.isEmpty || double.tryParse(value) == null ? 'Enter valid fat' : null,
+                  ),
+                  SizedBox(height: 10),
+                  _buildTextField(
                     controller: foodWeightController,
                     label: 'Food Weight',
                     hint: 'Enter weight (g)',
@@ -718,13 +729,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   final protein = double.parse(proteinController.text.trim());
                   final fat = double.parse(fatController.text.trim());
                   final foodWeight = double.parse(foodWeightController.text.trim());
+                  final carbWeight = double.parse(carbsController.text.trim());
 
                   userProvider.logFood(Food(
                     foodName: foodName,
                     calories: calories,
                     protein: protein,
                     fat: fat,
-                    foodWeight: foodWeight,
+                    foodWeight: foodWeight, carbs:carbWeight,
                   ));
                   Navigator.pop(context);
                 }
