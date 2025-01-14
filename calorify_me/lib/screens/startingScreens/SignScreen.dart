@@ -43,12 +43,6 @@ class _SignScreenState extends State<SignScreen> {
                   ),
                 ),
                 _buildSignInButton(
-                  icon: Image.asset('assets/images/googleIcon.png', height: 24),
-                  label: 'Sign in with Google',
-                  onPressed: () {},
-                ),
-                SizedBox(height: 10.0),
-                _buildSignInButton(
                   icon: Icon(CupertinoIcons.mail, color: Colors.blue),
                   label: 'Sign in with Email',
                   onPressed: () => Navigator.pushNamed(context, '/login'),

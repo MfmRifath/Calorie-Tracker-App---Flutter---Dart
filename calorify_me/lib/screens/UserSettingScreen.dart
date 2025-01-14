@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'AccountSettingScreen.dart';
 import 'ThemeScreen.dart';
 
 class UserSettingsScreen extends StatelessWidget {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -52,7 +57,6 @@ class UserSettingsScreen extends StatelessWidget {
                     builder: (context) => AccountSettingsScreen(),
                   ),
                 );
-
               },
             ),
             _buildSettingsOption(
@@ -78,7 +82,6 @@ class UserSettingsScreen extends StatelessWidget {
                   context,
                   MaterialPageRoute(builder: (context) => ThemeScreen()),
                 );
-
               },
             ),
             _buildSettingsOption(
@@ -104,6 +107,14 @@ class UserSettingsScreen extends StatelessWidget {
                   SnackBar(content: Text('About clicked')),
                 );
               },
+            ),
+            _buildSettingsOption(
+              context,
+              title: 'Delete Account',
+              subtitle: 'Permanently delete your account',
+              icon: Icons.delete_forever,
+              color: Colors.redAccent,
+              onTap: () => _confirmDeleteUser(context),
             ),
           ],
         ),
@@ -149,5 +160,58 @@ class UserSettingsScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _confirmDeleteUser(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Confirm Delete"),
+        content: Text(
+          "Are you sure you want to delete your account? This action cannot be undone.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context); // Close the dialog
+              await _deleteUser(context);
+            },
+            child: Text(
+              "Delete",
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deleteUser(BuildContext context) async {
+    try {
+      User? user = _auth.currentUser;
+
+      if (user != null) {
+        // Delete user data from Firestore
+        await _firestore.collection('users').doc(user.uid).delete();
+
+        // Delete the Firebase Auth user
+        await user.delete();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Account deleted successfully.')),
+        );
+
+        // Navigate back to login or home screen
+        Navigator.of(context).pushReplacementNamed('/login');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error deleting account: $e')),
+      );
+    }
   }
 }

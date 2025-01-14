@@ -334,4 +334,34 @@ class UserProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+  Future<void> deleteUser() async {
+    if (_userId == null) {
+      print("Error: User ID is null.");
+      return;
+    }
+    try {
+      // Delete user data from Firestore
+      await _firestore.collection('users').doc(_userId).delete();
+
+      // Delete associated data such as food logs
+      await deleteAllFoodLogs();
+
+      // Delete the Firebase Auth user
+      User? firebaseUser = FirebaseAuth.instance.currentUser;
+      if (firebaseUser != null) {
+        await firebaseUser.delete();
+      }
+
+      // Reset local variables
+      _user = null;
+      _foodLog = [];
+      _userId = null;
+      _currentUser = null;
+
+      notifyListeners();
+      print("User and associated data deleted successfully.");
+    } catch (e) {
+      print("Error deleting user: $e");
+    }
+  }
 }
